@@ -82,7 +82,9 @@ main {
 .post-pagination a:hover,
 .post-pagination a:focus-visible,
 .about-links a:hover,
-.about-links a:focus-visible {
+.about-links a:focus-visible,
+.post-toc a:hover,
+.post-toc a:focus-visible {
   color: var(--text);
 }
 
@@ -235,6 +237,64 @@ main {
   border-color: rgba(20, 20, 20, 0.22);
 }
 
+.post-layout {
+  display: grid;
+  grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+  align-items: start;
+  gap: 2.5rem;
+}
+
+.post-toc {
+  position: sticky;
+  top: 104px;
+  max-height: calc(100vh - 136px);
+  overflow-y: auto;
+  padding-top: 3.5rem;
+  padding-right: 0.4rem;
+}
+
+.post-toc-inner {
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+}
+
+.post-toc-title {
+  margin: 0 0 0.9rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.post-toc-list {
+  display: grid;
+  gap: 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.post-toc-list li {
+  margin: 0;
+}
+
+.post-toc-list li.depth-3 {
+  padding-left: 0.9rem;
+}
+
+.post-toc a {
+  color: var(--muted);
+  line-height: 1.5;
+  text-decoration: none;
+  transition: color 180ms ease;
+}
+
+.post-toc a.is-active,
+.post-toc a[aria-current='true'] {
+  color: var(--text);
+  font-weight: 600;
+}
+
 .post-article {
   width: min(100%, var(--reading-width));
   margin: 0 auto;
@@ -265,6 +325,7 @@ main {
 
 .post-body h2,
 .post-body h3 {
+  scroll-margin-top: 100px;
   margin-top: 2.75rem;
   line-height: 1.2;
 }
@@ -404,6 +465,25 @@ main {
   color: var(--muted);
 }
 
+@media (max-width: 960px) {
+  .post-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .post-toc {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-top: 2rem;
+    padding-right: 0;
+  }
+
+  .post-article {
+    width: 100%;
+  }
+}
+
 @media (max-width: 720px) {
   .site-header,
   .site-nav {
@@ -441,3 +521,4 @@ main {
     align-items: flex-start;
   }
 }
+

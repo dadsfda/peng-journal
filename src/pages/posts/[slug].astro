@@ -2,7 +2,8 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostMeta from '../../components/PostMeta.astro';
-import { getAdjacentPosts, getPostPermalink, getPostSlug } from '../../lib/blog';
+import PostTableOfContents from '../../components/PostTableOfContents.astro';
+import { getAdjacentPosts, getPostPermalink, getPostSlug, getTableOfContents } from '../../lib/blog';
 
 export async function getStaticPaths() {
   const posts = await getCollection('blog');
@@ -13,26 +14,78 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await post.render();
+const { Content, headings } = await post.render();
 const allPosts = await getCollection('blog');
 const { previousPost, nextPost } = getAdjacentPosts(allPosts, post);
+const tableOfContents = getTableOfContents(headings);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article class="post-article">
-    <header class="post-header">
-      <h1>{post.data.title}</h1>
-      <PostMeta post={post} />
-      <p class="post-description">{post.data.description}</p>
-    </header>
-    <div class="post-body">
-      <Content />
-    </div>
-    {(previousPost || nextPost) && (
-      <nav class="post-pagination" aria-label={'\u6587\u7ae0\u5206\u9875'}>
-        {previousPost && <a href={getPostPermalink(previousPost)}>{'\u4e0a\u4e00\u7bc7\uff1a'}{previousPost.data.title}</a>}
-        {nextPost && <a href={getPostPermalink(nextPost)}>{'\u4e0b\u4e00\u7bc7\uff1a'}{nextPost.data.title}</a>}
-      </nav>
-    )}
-  </article>
+  <div class="post-layout" data-toc-script>
+    <PostTableOfContents items={tableOfContents} />
+    <article class="post-article">
+      <header class="post-header">
+        <h1>{post.data.title}</h1>
+        <PostMeta post={post} />
+        <p class="post-description">{post.data.description}</p>
+      </header>
+      <div class="post-body" data-post-content>
+        <Content />
+      </div>
+      {(previousPost || nextPost) && (
+        <nav class="post-pagination" aria-label={'文章分页'}>
+          {previousPost && <a href={getPostPermalink(previousPost)}>{'上一篇：'}{previousPost.data.title}</a>}
+          {nextPost && <a href={getPostPermalink(nextPost)}>{'下一篇：'}{nextPost.data.title}</a>}
+        </nav>
+      )}
+    </article>
+  </div>
+
+  <script is:inline>
+    {`
+      (() => {
+        const root = document.querySelector('[data-toc-script]');
+        if (!root) return;
+
+        const links = Array.from(root.querySelectorAll('[data-toc-link]'));
+        const headings = Array.from(root.querySelectorAll('[data-post-content] h2, [data-post-content] h3'));
+        if (!links.length || !headings.length) return;
+
+        const linkMap = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]));
+
+        const setActive = (slug) => {
+          links.forEach((link) => {
+            const isActive = link.getAttribute('data-toc-link') === slug;
+            link.classList.toggle('is-active', isActive);
+            if (isActive) {
+              link.setAttribute('aria-current', 'true');
+            } else {
+              link.removeAttribute('aria-current');
+            }
+          });
+        };
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            const visibleEntries = entries
+              .filter((entry) => entry.isIntersecting)
+              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+            const activeHeading = visibleEntries[0]?.target ?? headings[0];
+            const activeSlug = activeHeading?.id;
+            if (activeSlug && linkMap.has(activeSlug)) {
+              setActive(activeSlug);
+            }
+          },
+          {
+            rootMargin: '-20% 0px -60% 0px',
+            threshold: [0, 1]
+          }
+        );
+
+        headings.forEach((heading) => observer.observe(heading));
+        setActive(headings[0]?.id ?? '');
+      })();
+    `}
+  </script>
 </BaseLayout>

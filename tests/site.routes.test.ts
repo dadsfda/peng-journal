@@ -4,6 +4,7 @@ import { describe, expect, test } from 'vitest';
 import { experimental_AstroContainer as AstroContainer } from 'astro/container';
 import Hero from '../src/components/Hero.astro';
 import PostMeta from '../src/components/PostMeta.astro';
+import PostTableOfContents from '../src/components/PostTableOfContents.astro';
 import BaseLayout from '../src/layouts/BaseLayout.astro';
 import { siteConfig } from '../src/data/site';
 
@@ -75,6 +76,26 @@ describe('post meta component', () => {
   });
 });
 
+describe('post table of contents component', () => {
+  test('输出目录项标记，供滚动高亮脚本使用', async () => {
+    const container = await AstroContainer.create();
+    const html = await container.renderToString(PostTableOfContents, {
+      props: {
+        items: [
+          { depth: 2, slug: 'summary', text: '一句话概括' },
+          { depth: 3, slug: 'react-mode', text: 'ReAct 模式' }
+        ]
+      },
+      partial: false
+    });
+
+    expect(html).toContain('data-toc');
+    expect(html).toContain('data-toc-link="summary"');
+    expect(html).toContain('data-toc-link="react-mode"');
+    expect(html).toContain('class="depth-3"');
+  });
+});
+
 describe('home page', () => {
   test('构建产物中包含首页真实内容、标签输出与分区数据差异', () => {
     const html = readFileSync(resolve(process.cwd(), 'dist/index.html'), 'utf-8');
@@ -102,6 +123,28 @@ describe('home page', () => {
   });
 });
 
+describe('post table of contents', () => {
+  test('长文章详情页包含左侧目录、锚点链接与高亮挂载点', () => {
+    const html = readFileSync(resolve(process.cwd(), 'dist/posts/ai-agent-building-summary/index.html'), 'utf-8');
+
+    expect(html).toContain('文章目录');
+    expect(html).toContain('class="post-layout"');
+    expect(html).toContain('class="post-toc"');
+    expect(html).toContain('href="#一句话概括"');
+    expect(html).toContain('href="#react-模式"');
+    expect(html).toContain('data-toc-link="一句话概括"');
+    expect(html).toContain('data-toc-link="react-模式"');
+    expect(html).toContain('data-toc-script');
+  });
+
+  test('目录区域具备独立滚动能力', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
+
+    expect(css).toContain('max-height: calc(100vh - 136px);');
+    expect(css).toContain('overflow-y: auto;');
+  });
+});
+
 describe('about page', () => {
   test('构建产物中包含关于页内容与联系信息', () => {
     const html = readFileSync(resolve(process.cwd(), 'dist/about/index.html'), 'utf-8');
@@ -110,7 +153,7 @@ describe('about page', () => {
     expect(html).toContain('我在关注什么');
     expect(html).toContain('设计与排版');
     expect(html).toContain(siteConfig.email);
-    expect(html).toContain('mailto:hello@example.com');
+    expect(html).toContain('mailto:914144406@qq.com');
     expect(html).toContain(`${siteConfig.siteUrl}/about/`);
   });
 });

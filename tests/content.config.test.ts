@@ -6,6 +6,7 @@ import {
   getAllTags,
   getFeaturedPosts,
   getPostPermalink,
+  getTableOfContents,
   getTagPermalink,
   getTagSlug,
   sortPostsByDateDesc
@@ -115,6 +116,20 @@ describe('blog utils', () => {
 
     expect(previousPost?.id).toBe('a');
     expect(nextPost?.id).toBe('b');
+  });
+
+  test('能够从标题列表里提取二三级标题目录', () => {
+    const toc = getTableOfContents([
+      { depth: 1, slug: 'title', text: 'Title' },
+      { depth: 2, slug: 'summary', text: '一句话概括' },
+      { depth: 3, slug: 'react', text: 'ReAct 模式' },
+      { depth: 4, slug: 'ignore-me', text: 'Ignore Me' }
+    ]);
+
+    expect(toc).toEqual([
+      { depth: 2, slug: 'summary', text: '一句话概括' },
+      { depth: 3, slug: 'react', text: 'ReAct 模式' }
+    ]);
   });
 });
 

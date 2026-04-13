@@ -1,4 +1,5 @@
-﻿import type { CollectionEntry } from 'astro:content';
+﻿import type { MarkdownHeading } from 'astro';
+import type { CollectionEntry } from 'astro:content';
 
 export type BlogPost = Pick<CollectionEntry<'blog'>, 'id' | 'data'>;
 
@@ -6,6 +7,12 @@ export type BlogTag = {
   name: string;
   count: number;
   slug: string;
+};
+
+export type TableOfContentsItem = {
+  depth: 2 | 3;
+  slug: string;
+  text: string;
 };
 
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, '');
@@ -45,6 +52,16 @@ export const getAdjacentPosts = <T extends BlogPost>(posts: T[], currentPost: T)
     previousPost: currentIndex >= 0 ? sortedPosts[currentIndex + 1] : undefined,
     nextPost: currentIndex > 0 ? sortedPosts[currentIndex - 1] : undefined
   };
+};
+
+export const getTableOfContents = (headings: MarkdownHeading[]): TableOfContentsItem[] => {
+  return headings
+    .filter((heading): heading is MarkdownHeading & { depth: 2 | 3 } => heading.depth === 2 || heading.depth === 3)
+    .map((heading) => ({
+      depth: heading.depth,
+      slug: heading.slug,
+      text: heading.text
+    }));
 };
 
 export const getAllTags = <T extends BlogPost>(posts: T[]) => {
