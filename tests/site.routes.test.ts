@@ -52,7 +52,7 @@ describe('hero component', () => {
 });
 
 describe('post meta component', () => {
-  test('输出日期与标签列表', async () => {
+  test('输出日期、最后更新时间与标签列表', async () => {
     const container = await AstroContainer.create();
     const html = await container.renderToString(PostMeta, {
       props: {
@@ -62,6 +62,7 @@ describe('post meta component', () => {
             title: 'Sample',
             description: 'desc',
             pubDate: new Date('2026-04-12T00:00:00.000Z'),
+            updatedDate: new Date('2026-04-15T00:00:00.000Z'),
             tags: ['Astro', '设计'],
             featured: true
           }
@@ -70,7 +71,8 @@ describe('post meta component', () => {
       partial: false
     });
 
-    expect(html).toContain('2026年4月12日');
+    expect(html).toContain('发布于 2026年4月12日');
+    expect(html).toContain('最后更新于 2026年4月15日');
     expect(html).toContain('Astro');
     expect(html).toContain('设计');
     expect(html).toContain('datetime="2026-04-12T00:00:00.000Z"');
@@ -139,6 +141,12 @@ describe('post table of contents', () => {
     expect(html).toContain('data-toc-script');
   });
 
+  test('文章详情页会显示最后更新时间', () => {
+    const html = readFileSync(resolve(process.cwd(), 'dist/posts/ai-agent-building-summary/index.html'), 'utf-8');
+
+    expect(html).toContain('最后更新于 2026年4月14日');
+  });
+
   test('目录区域具备独立滚动能力', () => {
     const css = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
 
@@ -191,3 +199,6 @@ describe('task 6 route files', () => {
     expect(checks).toEqual([true, true, true, true, true, true, true]);
   });
 });
+
+
+

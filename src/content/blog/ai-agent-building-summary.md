@@ -2,6 +2,7 @@
 title: AI 智能体构建总结
 description: 从概念、执行循环到 OpenManus 拆解，梳理 AI 智能体从理解到落地的一条清晰路径。
 pubDate: 2026-04-13
+updatedDate: 2026-04-14
 tags:
   - AI 智能体
   - OpenManus

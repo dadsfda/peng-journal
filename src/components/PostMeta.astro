@@ -7,15 +7,20 @@ interface Props {
 }
 
 const { post } = Astro.props;
-const dateText = post.data.pubDate.toLocaleDateString('zh-CN', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric'
-});
+const formatDate = (value: Date) =>
+  value.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+const dateText = formatDate(post.data.pubDate);
+const updatedDateText = post.data.updatedDate ? formatDate(post.data.updatedDate) : undefined;
 ---
 
 <div class="post-meta">
-  <time datetime={post.data.pubDate.toISOString()}>{dateText}</time>
+  <time datetime={post.data.pubDate.toISOString()}>发布于 {dateText}</time>
+  {updatedDateText && <span>最后更新于 {updatedDateText}</span>}
   <ul>
     {post.data.tags.map((tag: string) => (
       <li><a href={getTagPermalink(tag)}>{tag}</a></li>
