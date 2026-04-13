@@ -15,6 +15,14 @@ export type TableOfContentsItem = {
   text: string;
 };
 
+export type SearchIndexItem = {
+  title: string;
+  description: string;
+  tags: string[];
+  permalink: string;
+  pubDate: string;
+};
+
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, '');
 const stripMarkdownExtension = (value: string) => value.replace(/\.md$/i, '');
 const normalizeTagName = (value: string) => value.trim();
@@ -62,6 +70,16 @@ export const getTableOfContents = (headings: MarkdownHeading[]): TableOfContents
       slug: heading.slug,
       text: heading.text
     }));
+};
+
+export const getSearchIndex = <T extends BlogPost>(posts: T[]): SearchIndexItem[] => {
+  return sortPostsByDateDesc(posts).map((post) => ({
+    title: post.data.title,
+    description: post.data.description,
+    tags: post.data.tags,
+    permalink: getPostPermalink(post),
+    pubDate: post.data.pubDate.toISOString()
+  }));
 };
 
 export const getAllTags = <T extends BlogPost>(posts: T[]) => {

@@ -1,0 +1,84 @@
+﻿---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSearchIndex } from '../lib/blog';
+import { siteConfig } from '../data/site';
+
+const posts = await getCollection('blog');
+const searchIndex = getSearchIndex(posts);
+---
+
+<BaseLayout title={`搜索 | ${siteConfig.title}`} description="搜索标题、摘要或标签。" path="/search/">
+  <section class="search-page">
+    <p class="eyebrow">Search</p>
+    <div class="search-hero">
+      <h1>搜索文章</h1>
+      <p>搜索标题、摘要或标签。</p>
+    </div>
+
+    <div class="search-panel" data-search-root>
+      <label class="search-label" for="search-input">搜索内容</label>
+      <input id="search-input" class="search-input" type="search" placeholder="输入关键词，比如 AI、OpenManus、前端" data-search-input />
+      <p class="search-summary" data-search-summary>共 {searchIndex.length} 篇文章</p>
+
+      <div class="search-results" data-search-results>
+        {searchIndex.map((item) => (
+          <article class="search-result" data-search-item data-search-title={item.title} data-search-description={item.description} data-search-tags={item.tags.join(' ')}>
+            <time datetime={item.pubDate}>{new Date(item.pubDate).toLocaleDateString('zh-CN', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</time>
+            <h2><a href={item.permalink}>{item.title}</a></h2>
+            <p>{item.description}</p>
+            <ul>
+              {item.tags.map((tag) => (
+                <li>{tag}</li>
+              ))}
+            </ul>
+          </article>
+        ))}
+      </div>
+
+      <p class="search-empty" data-search-empty hidden>没有找到匹配的文章，试试别的关键词。</p>
+    </div>
+  </section>
+
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', () => {
+      const root = document.querySelector('[data-search-root]');
+      if (!root) return;
+
+      const input = root.querySelector('[data-search-input]');
+      const summary = root.querySelector('[data-search-summary]');
+      const empty = root.querySelector('[data-search-empty]');
+      const items = Array.from(root.querySelectorAll('[data-search-item]'));
+      if (!input || !summary || !empty || !items.length) return;
+
+      const update = () => {
+        const keyword = input.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        items.forEach((item) => {
+          const haystack = [
+            item.getAttribute('data-search-title') || '',
+            item.getAttribute('data-search-description') || '',
+            item.getAttribute('data-search-tags') || ''
+          ].join(' ').toLowerCase();
+
+          const matched = keyword === '' || haystack.includes(keyword);
+          item.hidden = !matched;
+          if (matched) visibleCount += 1;
+        });
+
+        summary.textContent = keyword === ''
+          ? '共 ' + items.length + ' 篇文章'
+          : '找到 ' + visibleCount + ' 篇相关文章';
+        empty.hidden = visibleCount !== 0;
+      };
+
+      input.addEventListener('input', update);
+      update();
+    });
+  </script>
+</BaseLayout>

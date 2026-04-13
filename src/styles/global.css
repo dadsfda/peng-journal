@@ -84,7 +84,9 @@ main {
 .about-links a:hover,
 .about-links a:focus-visible,
 .post-toc a:hover,
-.post-toc a:focus-visible {
+.post-toc a:focus-visible,
+.search-result a:hover,
+.search-result a:focus-visible {
   color: var(--text);
 }
 
@@ -146,13 +148,15 @@ main {
 }
 
 .post-row,
-.featured-grid article {
+.featured-grid article,
+.search-result {
   border-bottom: 1px solid var(--line);
   padding: 1.25rem 0;
 }
 
 .featured-grid article h3,
-.post-row h3 {
+.post-row h3,
+.search-result h2 {
   margin: 0.5rem 0 0.75rem;
   font-size: 1.5rem;
 }
@@ -160,13 +164,15 @@ main {
 .featured-grid article a,
 .post-row a,
 .post-pagination a,
-.about-links a {
+.about-links a,
+.search-result a {
   color: var(--text);
   text-decoration: none;
 }
 
 .featured-grid article p,
-.post-row p {
+.post-row p,
+.search-result p {
   margin: 0;
   color: var(--muted);
   line-height: 1.7;
@@ -189,7 +195,8 @@ main {
   white-space: nowrap;
 }
 
-.post-meta ul {
+.post-meta ul,
+.search-result ul {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -198,12 +205,14 @@ main {
   list-style: none;
 }
 
-.post-meta li {
+.post-meta li,
+.search-result li {
   border: 1px solid var(--line);
   border-radius: 999px;
 }
 
-.post-meta a {
+.post-meta a,
+.search-result li {
   display: inline-flex;
   padding: 0.15rem 0.55rem;
   color: inherit;
@@ -374,6 +383,68 @@ main {
   border-top: 1px solid var(--line);
 }
 
+.search-page {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: 4rem 0 4.5rem;
+}
+
+.search-hero {
+  width: min(100%, 42rem);
+}
+
+.search-hero h1 {
+  margin: 0;
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+  line-height: 1.02;
+}
+
+.search-hero p,
+.search-summary,
+.search-empty,
+.search-result time {
+  color: var(--muted);
+}
+
+.search-panel {
+  margin-top: 2rem;
+}
+
+.search-label {
+  display: block;
+  margin-bottom: 0.6rem;
+  color: var(--muted);
+}
+
+.search-input {
+  width: 100%;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--text);
+  font: inherit;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: rgba(20, 20, 20, 0.28);
+}
+
+.search-summary,
+.search-empty {
+  margin: 1rem 0 0;
+}
+
+.search-results {
+  margin-top: 1.5rem;
+}
+
+.search-result time {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
 .about-page {
   width: min(100%, 920px);
   margin: 0 auto;
@@ -507,6 +578,7 @@ main {
     gap: 0;
   }
 
+  .search-page,
   .about-page {
     padding: 3rem 0 3.5rem;
   }
@@ -521,4 +593,3 @@ main {
     align-items: flex-start;
   }
 }
-

@@ -25,9 +25,11 @@ describe('base layout', () => {
 
     expect(html).toContain('文章');
     expect(html).toContain('标签');
+    expect(html).toContain('搜索');
     expect(html).toContain('关于');
     expect(html).toContain('href="/posts"');
     expect(html).toContain('href="/tags"');
+    expect(html).toContain('href="/search"');
     expect(html).toContain('href="/about"');
     expect(html).toContain('<section>content</section>');
     expect(html).toMatch(/<main class="page-shell"[^>]*>[\s\S]*<section>content<\/section>[\s\S]*<\/main>/);
@@ -145,6 +147,20 @@ describe('post table of contents', () => {
   });
 });
 
+describe('search and feed', () => {
+  test('构建产物中包含搜索页、RSS 和 sitemap', () => {
+    const searchHtml = readFileSync(resolve(process.cwd(), 'dist/search/index.html'), 'utf-8');
+    const rssXml = readFileSync(resolve(process.cwd(), 'dist/rss.xml'), 'utf-8');
+    const sitemapXml = readFileSync(resolve(process.cwd(), 'dist/sitemap-index.xml'), 'utf-8');
+
+    expect(searchHtml).toContain('搜索文章');
+    expect(searchHtml).toContain('搜索标题、摘要或标签');
+    expect(rssXml).toContain('<rss');
+    expect(rssXml).toContain('Peng Journal');
+    expect(sitemapXml).toContain('<sitemapindex');
+  });
+});
+
 describe('about page', () => {
   test('构建产物中包含关于页内容与联系信息', () => {
     const html = readFileSync(resolve(process.cwd(), 'dist/about/index.html'), 'utf-8');
@@ -166,10 +182,12 @@ describe('task 6 route files', () => {
       'src/pages/posts/index.astro',
       'src/pages/posts/[slug].astro',
       'src/pages/tags/index.astro',
-      'src/pages/tags/[tag].astro'
+      'src/pages/tags/[tag].astro',
+      'src/pages/search.astro',
+      'src/pages/rss.xml.ts'
     ];
 
     const checks = await Promise.all(files.map((file) => access(file).then(() => true).catch(() => false)));
-    expect(checks).toEqual([true, true, true, true, true]);
+    expect(checks).toEqual([true, true, true, true, true, true, true]);
   });
 });

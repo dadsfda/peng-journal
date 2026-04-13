@@ -6,6 +6,7 @@ import {
   getAllTags,
   getFeaturedPosts,
   getPostPermalink,
+  getSearchIndex,
   getTableOfContents,
   getTagPermalink,
   getTagSlug,
@@ -129,6 +130,27 @@ describe('blog utils', () => {
     expect(toc).toEqual([
       { depth: 2, slug: 'summary', text: '一句话概括' },
       { depth: 3, slug: 'react', text: 'ReAct 模式' }
+    ]);
+  });
+
+  test('能够生成搜索索引数据', () => {
+    const searchIndex = getSearchIndex(posts);
+
+    expect(searchIndex).toEqual([
+      {
+        title: 'B',
+        description: 'desc',
+        tags: ['Design'],
+        permalink: '/posts/b/',
+        pubDate: '2026-04-12T00:00:00.000Z'
+      },
+      {
+        title: 'A',
+        description: 'desc',
+        tags: ['Astro', 'Design'],
+        permalink: '/posts/a/',
+        pubDate: '2026-04-01T00:00:00.000Z'
+      }
     ]);
   });
 });
