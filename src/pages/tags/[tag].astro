@@ -1,0 +1,27 @@
+﻿---
+import { getCollection } from 'astro:content';
+import PostList from '../../components/PostList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getAllTags, getTagSlug, sortPostsByDateDesc } from '../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  const tags = getAllTags(posts);
+
+  return tags.map((tag) => ({
+    params: { tag: tag.slug },
+    props: { tagName: tag.name, tagSlug: tag.slug }
+  }));
+}
+
+const { tagName, tagSlug } = Astro.props;
+const posts = sortPostsByDateDesc(await getCollection('blog')).filter((post) =>
+  post.data.tags.some((item) => getTagSlug(item) === tagSlug)
+);
+const pageTitle = tagName + ' ' + '\u6807\u7b7e';
+const pageDescription = '\u6d4f\u89c8 ' + tagName + ' ' + '\u6807\u7b7e\u4e0b\u7684\u6587\u7ae0\u3002';
+---
+
+<BaseLayout title={pageTitle} description={pageDescription}>
+  <PostList title={pageTitle} posts={posts} />
+</BaseLayout>

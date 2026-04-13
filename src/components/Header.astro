@@ -1,0 +1,20 @@
+﻿---
+import { siteConfig } from '../data/site';
+
+const navItems = [
+  { href: '/posts', label: '文章' },
+  { href: '/tags', label: '标签' },
+  { href: '/about', label: '关于' }
+];
+---
+
+<header class="site-header">
+  <a class="site-brand" href="/">{siteConfig.title}</a>
+  <nav aria-label="主导航">
+    <ul class="site-nav">
+      {navItems.map((item) => (
+        <li><a href={item.href}>{item.label}</a></li>
+      ))}
+    </ul>
+  </nav>
+</header>

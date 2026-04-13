@@ -1,0 +1,8 @@
+﻿<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F3F1EB"/>
+  <rect x="72" y="72" width="1056" height="486" rx="28" fill="#FAF9F5" stroke="#141414" stroke-opacity="0.12"/>
+  <path d="M120 196H1080" stroke="#141414" stroke-opacity="0.14"/>
+  <path d="M120 434H1080" stroke="#141414" stroke-opacity="0.14"/>
+  <text x="120" y="298" fill="#141414" font-size="88" font-family="Georgia, 'Times New Roman', serif">Lin Journal</text>
+  <text x="120" y="366" fill="#666666" font-size="30" font-family="Georgia, 'Times New Roman', serif">A minimal personal blog about design, code and writing.</text>
+</svg>

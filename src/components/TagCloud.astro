@@ -1,0 +1,25 @@
+---
+import type { BlogTag } from '../lib/blog';
+
+interface Props {
+  tags: BlogTag[];
+}
+
+const { tags } = Astro.props;
+---
+
+<section class="tag-cloud-section">
+  <div class="section-heading">
+    <h2>{'\u6807\u7b7e'}</h2>
+  </div>
+  <ul class="tag-cloud-list">
+    {tags.map((tag) => (
+      <li>
+        <a href={`/tags/${tag.slug}/`}>
+          <span>{tag.name}</span>
+          <span>{tag.count}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

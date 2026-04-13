@@ -1,0 +1,27 @@
+﻿---
+import type { BlogPost } from '../lib/blog';
+import { getPostPermalink } from '../lib/blog';
+import PostMeta from './PostMeta.astro';
+
+interface Props {
+  title: string;
+  posts: BlogPost[];
+}
+
+const { title, posts } = Astro.props;
+---
+
+<section class="post-list-section">
+  <div class="section-heading">
+    <h2>{title}</h2>
+  </div>
+  <div class="post-list">
+    {posts.map((post) => (
+      <article class="post-row">
+        <PostMeta post={post} />
+        <h3><a href={getPostPermalink(post)}>{post.data.title}</a></h3>
+        <p>{post.data.description}</p>
+      </article>
+    ))}
+  </div>
+</section>

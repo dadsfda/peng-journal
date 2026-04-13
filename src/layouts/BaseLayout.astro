@@ -1,0 +1,60 @@
+﻿---
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { siteConfig } from '../data/site';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  ogTitle?: string;
+  ogDescription?: string;
+  ogType?: 'website' | 'article';
+  ogImage?: string;
+}
+
+const {
+  title,
+  description,
+  path = Astro.url.pathname,
+  ogTitle = title,
+  ogDescription = description,
+  ogType = 'website',
+  ogImage = siteConfig.defaultOgImage
+} = Astro.props;
+
+const siteOrigin = Astro.site?.toString() ?? siteConfig.siteUrl;
+const canonicalUrl = new URL(path, siteOrigin).toString();
+const ogImageUrl = new URL(ogImage, siteOrigin).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={siteConfig.author} />
+    <link rel="canonical" href={canonicalUrl} />
+    <meta property="og:site_name" content={siteConfig.title} />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:type" content={ogType} />
+    <meta property="og:title" content={ogTitle} />
+    <meta property="og:description" content={ogDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={ogTitle} />
+    <meta name="twitter:description" content={ogDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+  </head>
+  <body>
+    <Header />
+    <main class="page-shell">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

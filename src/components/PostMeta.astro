@@ -1,0 +1,24 @@
+﻿---
+import type { BlogPost } from '../lib/blog';
+import { getTagPermalink } from '../lib/blog';
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const dateText = post.data.pubDate.toLocaleDateString('zh-CN', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
+---
+
+<div class="post-meta">
+  <time datetime={post.data.pubDate.toISOString()}>{dateText}</time>
+  <ul>
+    {post.data.tags.map((tag: string) => (
+      <li><a href={getTagPermalink(tag)}>{tag}</a></li>
+    ))}
+  </ul>
+</div>

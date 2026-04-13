@@ -1,0 +1,4 @@
+﻿node_modules/
+.astro/
+dist/
+.codex-dev.log

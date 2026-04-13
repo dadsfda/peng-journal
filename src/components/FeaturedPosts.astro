@@ -1,0 +1,26 @@
+﻿---
+import type { BlogPost } from '../lib/blog';
+import { getPostPermalink } from '../lib/blog';
+import PostMeta from './PostMeta.astro';
+
+interface Props {
+  posts: BlogPost[];
+}
+
+const { posts } = Astro.props;
+---
+
+<section class="featured-posts">
+  <div class="section-heading">
+    <h2>精选文章</h2>
+  </div>
+  <div class="featured-grid">
+    {posts.map((post) => (
+      <article>
+        <PostMeta post={post} />
+        <h3><a href={getPostPermalink(post)}>{post.data.title}</a></h3>
+        <p>{post.data.description}</p>
+      </article>
+    ))}
+  </div>
+</section>

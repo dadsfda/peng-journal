@@ -1,0 +1,38 @@
+﻿---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostMeta from '../../components/PostMeta.astro';
+import { getAdjacentPosts, getPostPermalink, getPostSlug } from '../../lib/blog';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: getPostSlug(post) },
+    props: { post }
+  }));
+}
+
+const { post } = Astro.props;
+const { Content } = await post.render();
+const allPosts = await getCollection('blog');
+const { previousPost, nextPost } = getAdjacentPosts(allPosts, post);
+---
+
+<BaseLayout title={post.data.title} description={post.data.description}>
+  <article class="post-article">
+    <header class="post-header">
+      <h1>{post.data.title}</h1>
+      <PostMeta post={post} />
+      <p class="post-description">{post.data.description}</p>
+    </header>
+    <div class="post-body">
+      <Content />
+    </div>
+    {(previousPost || nextPost) && (
+      <nav class="post-pagination" aria-label={'\u6587\u7ae0\u5206\u9875'}>
+        {previousPost && <a href={getPostPermalink(previousPost)}>{'\u4e0a\u4e00\u7bc7\uff1a'}{previousPost.data.title}</a>}
+        {nextPost && <a href={getPostPermalink(nextPost)}>{'\u4e0b\u4e00\u7bc7\uff1a'}{nextPost.data.title}</a>}
+      </nav>
+    )}
+  </article>
+</BaseLayout>
