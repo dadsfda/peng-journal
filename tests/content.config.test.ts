@@ -7,6 +7,7 @@ import {
   getArchiveGroups,
   getFeaturedPosts,
   getPostPermalink,
+  getPostSlug,
   getPublishedPosts,
   getSearchIndex,
   getSeriesPosts,
@@ -18,7 +19,8 @@ import {
 
 const posts = [
   {
-    id: 'a',
+    id: 'a.md',
+    slug: 'a',
     data: {
       title: 'A',
       description: 'desc',
@@ -29,7 +31,8 @@ const posts = [
     }
   },
   {
-    id: 'b',
+    id: 'b.md',
+    slug: 'b',
     data: {
       title: 'B',
       description: 'desc',
@@ -44,18 +47,19 @@ const posts = [
 describe('blog utils', () => {
   test('按日期倒序排序文章', () => {
     const sorted = sortPostsByDateDesc(posts);
-    expect(sorted.map((post) => post.id)).toEqual(['b', 'a']);
+    expect(sorted.map((post) => post.id)).toEqual(['b.md', 'a.md']);
   });
 
   test('筛选精选文章', () => {
     const featured = getFeaturedPosts(posts);
-    expect(featured.map((post) => post.id)).toEqual(['b']);
+    expect(featured.map((post) => post.id)).toEqual(['b.md']);
   });
 
   test('draft 文章不会进入公开文章集合', () => {
     const published = getPublishedPosts([
       {
-        id: 'published',
+        id: 'published.md',
+        slug: 'published',
         data: {
           title: 'Published',
           description: 'desc',
@@ -66,7 +70,8 @@ describe('blog utils', () => {
         }
       },
       {
-        id: 'draft',
+        id: 'draft.md',
+        slug: 'draft',
         data: {
           title: 'Draft',
           description: 'desc',
@@ -78,13 +83,14 @@ describe('blog utils', () => {
       }
     ] satisfies BlogPost[]);
 
-    expect(published.map((post) => post.id)).toEqual(['published']);
+    expect(published.map((post) => post.id)).toEqual(['published.md']);
   });
 
   test('按年和月分组归档数据', () => {
     const groups = getArchiveGroups([
       {
-        id: 'march-post',
+        id: 'march-post.md',
+        slug: 'march-post',
         data: {
           title: 'March',
           description: 'desc',
@@ -95,7 +101,8 @@ describe('blog utils', () => {
         }
       },
       {
-        id: 'april-post',
+        id: 'april-post.md',
+        slug: 'april-post',
         data: {
           title: 'April',
           description: 'desc',
@@ -114,12 +121,12 @@ describe('blog utils', () => {
           {
             month: 4,
             label: '04 月',
-            posts: [expect.objectContaining({ id: 'april-post' })]
+            posts: [expect.objectContaining({ id: 'april-post.md' })]
           },
           {
             month: 3,
             label: '03 月',
-            posts: [expect.objectContaining({ id: 'march-post' })]
+            posts: [expect.objectContaining({ id: 'march-post.md' })]
           }
         ]
       }
@@ -129,7 +136,8 @@ describe('blog utils', () => {
   test('返回同系列的公开文章并按时间排序', () => {
     const seriesPosts = getSeriesPosts([
       {
-        id: 'draft-post',
+        id: 'draft-post.md',
+        slug: 'draft-post',
         data: {
           title: 'Draft',
           description: 'desc',
@@ -141,7 +149,8 @@ describe('blog utils', () => {
         }
       },
       {
-        id: 'part-1',
+        id: 'part-1.md',
+        slug: 'part-1',
         data: {
           title: 'Part 1',
           description: 'desc',
@@ -153,7 +162,8 @@ describe('blog utils', () => {
         }
       },
       {
-        id: 'part-2',
+        id: 'part-2.md',
+        slug: 'part-2',
         data: {
           title: 'Part 2',
           description: 'desc',
@@ -166,7 +176,7 @@ describe('blog utils', () => {
       }
     ] satisfies BlogPost[], 'Astro 博客搭建');
 
-    expect(seriesPosts.map((post) => post.id)).toEqual(['part-2', 'part-1']);
+    expect(seriesPosts.map((post) => post.id)).toEqual(['part-2.md', 'part-1.md']);
   });
 
   test('聚合标签并按字母排序', () => {
@@ -180,7 +190,8 @@ describe('blog utils', () => {
   test('空标签文章不会生成无意义标签项', () => {
     const tags = getAllTags([
       {
-        id: 'c',
+        id: 'c.md',
+        slug: 'c',
         data: {
           title: 'C',
           description: 'desc',
@@ -198,7 +209,8 @@ describe('blog utils', () => {
   test('大小写与首尾空白差异的标签会聚合为同一项', () => {
     const tags = getAllTags([
       {
-        id: 'd',
+        id: 'd.md',
+        slug: 'd',
         data: {
           title: 'D',
           description: 'desc',
@@ -218,15 +230,61 @@ describe('blog utils', () => {
     expect(getTagPermalink('UI/UX')).toBe('/tags/ui%2Fux/');
   });
 
-  test('文章永久链接不会暴露 markdown 扩展名', () => {
-    expect(getPostPermalink('notes-on-quiet-design.md')).toBe('/posts/notes-on-quiet-design/');
+  test('文章永久链接优先使用 frontmatter 中的 slug', () => {
+    expect(
+      getPostSlug({
+        id: 'AI 智能体实践/AI 智能体构建总结.md',
+        slug: 'ai-agent-building-summary',
+        data: {
+          title: 'AI 智能体构建总结',
+          description: 'desc',
+          pubDate: new Date('2026-04-13'),
+          tags: ['AI'],
+          featured: false,
+          draft: false
+        }
+      } satisfies BlogPost)
+    ).toBe('ai-agent-building-summary');
+
+    expect(
+      getPostPermalink({
+        id: 'AI 智能体实践/AI 智能体构建总结.md',
+        slug: 'ai-agent-building-summary',
+        data: {
+          title: 'AI 智能体构建总结',
+          description: 'desc',
+          pubDate: new Date('2026-04-13'),
+          tags: ['AI'],
+          featured: false,
+          draft: false
+        }
+      } satisfies BlogPost)
+    ).toBe('/posts/ai-agent-building-summary/');
+  });
+
+  test('子目录文章仍然使用 slug 生成稳定链接', () => {
+    const permalink = getPostPermalink({
+      id: 'AI 智能体实践/AI 智能体构建总结.md',
+      slug: 'ai-agent-building-summary',
+      data: {
+        title: 'AI 智能体构建总结',
+        description: 'desc',
+        pubDate: new Date('2026-04-13'),
+        tags: ['AI'],
+        featured: false,
+        draft: false
+      }
+    } satisfies BlogPost);
+
+    expect(permalink).toBe('/posts/ai-agent-building-summary/');
   });
 
   test('能够返回显式的上一篇和下一篇文章', () => {
     const extendedPosts = [
       ...posts,
       {
-        id: 'c',
+        id: 'c.md',
+        slug: 'c',
         data: {
           title: 'C',
           description: 'desc',
@@ -240,8 +298,8 @@ describe('blog utils', () => {
 
     const { previousPost, nextPost } = getAdjacentPosts(extendedPosts, extendedPosts[2]);
 
-    expect(previousPost?.id).toBe('a');
-    expect(nextPost?.id).toBe('b');
+    expect(previousPost?.id).toBe('a.md');
+    expect(nextPost?.id).toBe('b.md');
   });
 
   test('能够从标题列表里提取二三级标题目录', () => {
@@ -281,10 +339,23 @@ describe('blog utils', () => {
 });
 
 describe('sample blog posts', () => {
-  test('示例文章都包含标题和标签字段', async () => {
+  test('系列文章使用子目录管理且文件名使用文章标题', async () => {
+    const files = [
+      'src/content/blog/AI 智能体实践/AI 智能体构建总结.md',
+      'src/content/blog/AI 智能体实践/Karpathy-Inspired Claude Code Guidelines.md'
+    ];
+
+    const contents = await Promise.all(files.map((file) => fs.readFile(file, 'utf8')));
+
+    for (const content of contents) {
+      expect(content).toContain('title:');
+      expect(content).toContain('slug:');
+    }
+  });
+
+  test('非系列文章仍保留在 blog 根目录', async () => {
     const files = [
       'src/content/blog/notes-on-quiet-design.md',
-      'src/content/blog/how-i-structure-writing.md',
       'src/content/blog/building-a-readable-blog.md'
     ];
 
@@ -296,3 +367,4 @@ describe('sample blog posts', () => {
     }
   });
 });
+

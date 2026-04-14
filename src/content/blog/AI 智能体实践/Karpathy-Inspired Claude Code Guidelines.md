@@ -1,5 +1,6 @@
 ﻿---
 title: Karpathy-Inspired Claude Code Guidelines
+slug: how-i-structure-writing
 description: 基于 Karpathy 理念制定的 Claude 智能体编码行为规范
 pubDate: 2026-04-14
 series: AI 智能体实践
@@ -183,4 +184,6 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - 修复 Bug 优先先复现问题，再验证修复效果。
 - 功能开发优先用测试或其他直接方式证明所需行为已实现。
 - 多步骤任务保留简短计划，每一步都设置验证点，以便独立检查进度。
+
+
 

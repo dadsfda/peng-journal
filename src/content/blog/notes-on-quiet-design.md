@@ -1,5 +1,6 @@
 ﻿---
 title: 安静设计的力量
+slug: notes-on-quiet-design
 description: 讨论为什么克制的界面更适合长期阅读。
 pubDate: 2026-04-12
 tags:
@@ -15,3 +16,5 @@ featured: true
 ## 为什么安静很重要
 
 当视觉语言足够克制，读者才能把注意力留给内容本身。
+
+

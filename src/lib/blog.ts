@@ -1,7 +1,7 @@
 ﻿import type { MarkdownHeading } from 'astro';
 import type { CollectionEntry } from 'astro:content';
 
-export type BlogPost = Pick<CollectionEntry<'blog'>, 'id' | 'data'>;
+export type BlogPost = Pick<CollectionEntry<'blog'>, 'id' | 'slug' | 'data'>;
 
 export type BlogTag = {
   name: string;
@@ -39,8 +39,11 @@ const stripMarkdownExtension = (value: string) => value.replace(/\.md$/i, '');
 const normalizeTagName = (value: string) => value.trim();
 
 export const getPostSlug = (postOrId: BlogPost | string) => {
-  const rawId = typeof postOrId === 'string' ? postOrId : postOrId.id;
-  return stripMarkdownExtension(trimSlashes(rawId));
+  if (typeof postOrId === 'string') {
+    return stripMarkdownExtension(trimSlashes(postOrId));
+  }
+
+  return postOrId.slug;
 };
 
 export const getPostPermalink = (postOrId: BlogPost | string) => {
@@ -153,5 +156,3 @@ export const getAllTags = <T extends BlogPost>(posts: T[]) => {
 
   return [...tagMap.values()].sort((a, b) => a.name.localeCompare(b.name));
 };
-
-

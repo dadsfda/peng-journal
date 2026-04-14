@@ -1,5 +1,6 @@
 ﻿---
 title: Draft Only Post
+slug: draft-only-post
 description: 只用于验证草稿过滤。
 pubDate: 2026-04-14
 tags:
@@ -9,3 +10,5 @@ featured: false
 ---
 
 这是一篇草稿文章。
+
+
