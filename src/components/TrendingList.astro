@@ -1,0 +1,32 @@
+﻿---
+import type { TrendingProject } from '../lib/trending';
+
+interface Props {
+  projects?: TrendingProject[];
+  title?: string;
+}
+
+const { projects = [], title = 'GitHub Trending' } = Astro.props;
+---
+
+<section class="trending-list-section">
+  <h2>{title}</h2>
+  {projects.length === 0 ? (
+    <p class="trending-empty">暂时没有可展示的热点项目。</p>
+  ) : (
+    <ul class="trending-list">
+      {projects.map((project) => (
+        <li class="trending-item">
+          <a href={project.url} target="_blank" rel="noreferrer">
+            <strong>{project.owner}/{project.name}</strong>
+          </a>
+          <p>{project.description}</p>
+          <div class="trending-meta">
+            <span>{project.language ?? 'Unknown'}</span>
+            <span>{project.starsToday ? `+${project.starsToday}` : '暂无增量数据'}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>

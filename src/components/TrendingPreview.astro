@@ -1,0 +1,54 @@
+﻿<section class="trending-preview" data-trending-preview data-trending-endpoint="/api/trending?since=daily">
+  <div class="section-heading trending-preview-heading">
+    <div>
+      <p class="eyebrow">Trending</p>
+      <h2>GitHub Trending</h2>
+      <p class="trending-subtitle">今日热点项目</p>
+    </div>
+    <a href="/trending/">查看完整榜单</a>
+  </div>
+
+  <p class="trending-empty" data-trending-loading>正在加载热点数据...</p>
+  <p class="trending-empty" data-trending-error hidden>暂时无法获取热点数据。</p>
+  <ul class="trending-preview-list" data-trending-list hidden></ul>
+</section>
+
+<script is:inline>
+  (() => {
+    const root = document.querySelector('[data-trending-preview]');
+    if (!root) return;
+
+    const endpoint = root.getAttribute('data-trending-endpoint');
+    const list = root.querySelector('[data-trending-list]');
+    const loading = root.querySelector('[data-trending-loading]');
+    const error = root.querySelector('[data-trending-error]');
+    if (!endpoint || !list || !loading || !error) return;
+
+    fetch(endpoint)
+      .then((response) => response.json())
+      .then((payload) => {
+        loading.hidden = true;
+        if (!payload.ok || !Array.isArray(payload.projects) || payload.projects.length === 0) {
+          error.hidden = false;
+          return;
+        }
+
+        const items = payload.projects.slice(0, 5).map((project) => {
+          const item = document.createElement('li');
+          item.className = 'trending-preview-item';
+          item.innerHTML = `
+            <a href="${project.url}" target="_blank" rel="noreferrer">${project.owner}/${project.name}</a>
+            <p>${project.description ?? ''}</p>
+          `;
+          return item;
+        });
+
+        list.replaceChildren(...items);
+        list.hidden = false;
+      })
+      .catch(() => {
+        loading.hidden = true;
+        error.hidden = false;
+      });
+  })();
+</script>

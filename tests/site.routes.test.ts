@@ -25,11 +25,13 @@ describe('base layout', () => {
 
     expect(html).toContain('文章');
     expect(html).toContain('归档');
+    expect(html).toContain('热点');
     expect(html).toContain('标签');
     expect(html).toContain('搜索');
     expect(html).toContain('关于');
     expect(html).toContain('href="/posts"');
     expect(html).toContain('href="/archive"');
+    expect(html).toContain('href="/trending"');
     expect(html).toContain('href="/tags"');
     expect(html).toContain('href="/search"');
     expect(html).toContain('href="/about"');
@@ -60,6 +62,7 @@ describe('post meta component', () => {
       props: {
         post: {
           id: 'sample',
+          slug: 'sample',
           data: {
             title: 'Sample',
             description: 'desc',
@@ -110,6 +113,8 @@ describe('home page', () => {
     const latestSection = html.match(/<section class="post-list-section">([\s\S]*?)<\/section>/)?.[1] ?? '';
 
     expect(html).toContain(siteConfig.title);
+    expect(html).toContain('GitHub Trending');
+    expect(html).toContain('/trending/');
     expect(html).toContain('精选文章');
     expect(html).toContain('最新文章');
     expect(html).toContain('>Astro<');
@@ -219,11 +224,13 @@ describe('task 6 route files', () => {
       'src/pages/tags/index.astro',
       'src/pages/tags/[tag].astro',
       'src/pages/search.astro',
-      'src/pages/rss.xml.ts'
+      'src/pages/rss.xml.ts',
+      'src/pages/trending.astro',
+      'src/pages/api/trending.ts'
     ];
 
     const checks = await Promise.all(files.map((file) => access(file).then(() => true).catch(() => false)));
-    expect(checks).toEqual([true, true, true, true, true, true, true, true]);
+    expect(checks).toEqual([true, true, true, true, true, true, true, true, true, true]);
   });
 });
 
@@ -242,5 +249,25 @@ describe('published content filtering', () => {
 
   test('草稿文章不会生成详情页路由', () => {
     expect(existsSync(resolve(process.cwd(), 'dist/posts/draft-only-post/index.html'))).toBe(false);
+  });
+});
+
+describe('trending page', () => {
+  test('构建产物中包含 trending 页面和日周切换入口', () => {
+    const html = readFileSync(resolve(process.cwd(), 'dist/trending/index.html'), 'utf-8');
+
+    expect(html).toContain('GitHub Trending');
+    expect(html).toContain('今日热点');
+    expect(html).toContain('本周热点');
+    expect(html).toContain('/api/trending?since=daily');
+    expect(html).toContain('/api/trending?since=weekly');
+  });
+
+  test('trending 页面包含页面结构类名和空状态钩子', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
+
+    expect(source).toContain('.trending-page');
+    expect(source).toContain('.trending-preview');
+    expect(source).toContain('.trending-list');
   });
 });

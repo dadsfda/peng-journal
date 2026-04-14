@@ -1,0 +1,100 @@
+﻿---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="GitHub Trending" description="查看 GitHub 每日与每周热点项目。" path="/trending/">
+  <section class="trending-page" data-trending-page>
+    <header class="trending-hero">
+      <p class="eyebrow">Trending</p>
+      <h1>GitHub Trending</h1>
+      <p>查看每日与每周热点项目。</p>
+    </header>
+
+    <div class="trending-tabs">
+      <button type="button" data-trending-tab="daily" class="is-active">今日热点</button>
+      <button type="button" data-trending-tab="weekly">本周热点</button>
+    </div>
+
+    <p class="trending-empty" data-trending-loading>正在加载热点数据...</p>
+    <p class="trending-empty" data-trending-error hidden>暂时无法获取热点数据。</p>
+
+    <section class="trending-list-section" data-trending-panel="daily">
+      <h2>今日热点</h2>
+      <ul class="trending-list" data-trending-list="daily"></ul>
+    </section>
+
+    <section class="trending-list-section" data-trending-panel="weekly" hidden>
+      <h2>本周热点</h2>
+      <ul class="trending-list" data-trending-list="weekly"></ul>
+    </section>
+  </section>
+
+  <script is:inline>
+    (() => {
+      const root = document.querySelector('[data-trending-page]');
+      if (!root) return;
+
+      const loading = root.querySelector('[data-trending-loading]');
+      const error = root.querySelector('[data-trending-error]');
+      const tabs = Array.from(root.querySelectorAll('[data-trending-tab]'));
+      const panels = Array.from(root.querySelectorAll('[data-trending-panel]'));
+      const lists = {
+        daily: root.querySelector('[data-trending-list="daily"]'),
+        weekly: root.querySelector('[data-trending-list="weekly"]')
+      };
+
+      const renderProjects = (projects, list) => {
+        if (!list) return;
+        const items = projects.map((project) => {
+          const item = document.createElement('li');
+          item.className = 'trending-item';
+          item.innerHTML = `
+            <a href="${project.url}" target="_blank" rel="noreferrer">
+              <strong>${project.owner}/${project.name}</strong>
+            </a>
+            <p>${project.description ?? ''}</p>
+            <div class="trending-meta">
+              <span>${project.language ?? 'Unknown'}</span>
+              <span>${project.starsToday ? `+${project.starsToday}` : '暂无增量数据'}</span>
+            </div>
+          `;
+          return item;
+        });
+        list.replaceChildren(...items);
+      };
+
+      Promise.all([
+        fetch('/api/trending?since=daily').then((response) => response.json()),
+        fetch('/api/trending?since=weekly').then((response) => response.json())
+      ])
+        .then(([dailyPayload, weeklyPayload]) => {
+          loading.hidden = true;
+
+          const hasDaily = dailyPayload.ok && Array.isArray(dailyPayload.projects) && dailyPayload.projects.length > 0;
+          const hasWeekly = weeklyPayload.ok && Array.isArray(weeklyPayload.projects) && weeklyPayload.projects.length > 0;
+
+          if (!hasDaily && !hasWeekly) {
+            error.hidden = false;
+            return;
+          }
+
+          if (hasDaily) renderProjects(dailyPayload.projects, lists.daily);
+          if (hasWeekly) renderProjects(weeklyPayload.projects, lists.weekly);
+
+          tabs.forEach((tab) => {
+            tab.addEventListener('click', () => {
+              const target = tab.getAttribute('data-trending-tab');
+              tabs.forEach((item) => item.classList.toggle('is-active', item === tab));
+              panels.forEach((panel) => {
+                panel.hidden = panel.getAttribute('data-trending-panel') !== target;
+              });
+            });
+          });
+        })
+        .catch(() => {
+          loading.hidden = true;
+          error.hidden = false;
+        });
+    })();
+  </script>
+</BaseLayout>

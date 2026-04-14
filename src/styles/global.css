@@ -86,7 +86,13 @@ main {
 .post-toc a:hover,
 .post-toc a:focus-visible,
 .search-result a:hover,
-.search-result a:focus-visible {
+.search-result a:focus-visible,
+.trending-preview a:hover,
+.trending-preview a:focus-visible,
+.trending-item a:hover,
+.trending-item a:focus-visible,
+.trending-tabs button:hover,
+.trending-tabs button:focus-visible {
   color: var(--text);
 }
 
@@ -137,8 +143,124 @@ main {
 
 .featured-posts,
 .post-list-section,
-.tag-cloud-section {
+.tag-cloud-section,
+.trending-preview {
   padding-bottom: 3rem;
+}
+
+.trending-preview-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.trending-preview-heading > a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.trending-subtitle,
+.trending-empty,
+.trending-item p,
+.trending-meta,
+.trending-preview-item p,
+.trending-hero p,
+.archive-list time,
+.archive-empty,
+.search-hero p,
+.search-summary,
+.search-empty,
+.search-result time,
+.about-intro p,
+.about-copy p {
+  color: var(--muted);
+}
+
+.trending-preview-list,
+.trending-list {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trending-preview-item,
+.trending-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.trending-preview-item a,
+.trending-item a,
+.archive-list a,
+.post-series a,
+.post-series span,
+.featured-grid article a,
+.post-row a,
+.post-pagination a,
+.about-links a,
+.search-result a {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.trending-preview-item a,
+.trending-item strong {
+  font-size: 1.05rem;
+}
+
+.trending-meta {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.trending-page,
+.search-page,
+.about-page,
+.archive-page {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: 4rem 0 4.5rem;
+}
+
+.trending-hero,
+.search-hero,
+.about-intro,
+.archive-hero {
+  width: min(100%, 40rem);
+}
+
+.trending-hero h1,
+.search-hero h1,
+.about-intro h1 {
+  margin: 0;
+  font-size: clamp(2.75rem, 5vw, 4.5rem);
+  line-height: 1.02;
+}
+
+.trending-tabs {
+  display: flex;
+  gap: 0.75rem;
+  margin: 2rem 0 1.5rem;
+}
+
+.trending-tabs button {
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.trending-tabs button.is-active {
+  color: var(--text);
+  border-color: rgba(20, 20, 20, 0.24);
 }
 
 .featured-grid {
@@ -159,15 +281,6 @@ main {
 .search-result h2 {
   margin: 0.5rem 0 0.75rem;
   font-size: 1.5rem;
-}
-
-.featured-grid article a,
-.post-row a,
-.post-pagination a,
-.about-links a,
-.search-result a {
-  color: var(--text);
-  text-decoration: none;
 }
 
 .featured-grid article p,
@@ -383,29 +496,6 @@ main {
   border-top: 1px solid var(--line);
 }
 
-.search-page {
-  width: min(100%, 920px);
-  margin: 0 auto;
-  padding: 4rem 0 4.5rem;
-}
-
-.search-hero {
-  width: min(100%, 42rem);
-}
-
-.search-hero h1 {
-  margin: 0;
-  font-size: clamp(2.75rem, 5vw, 4.5rem);
-  line-height: 1.02;
-}
-
-.search-hero p,
-.search-summary,
-.search-empty,
-.search-result time {
-  color: var(--muted);
-}
-
 .search-panel {
   margin-top: 2rem;
 }
@@ -443,28 +533,6 @@ main {
 .search-result time {
   display: inline-block;
   margin-bottom: 0.5rem;
-}
-
-.about-page {
-  width: min(100%, 920px);
-  margin: 0 auto;
-  padding: 4rem 0 4.5rem;
-}
-
-.about-intro {
-  width: min(100%, 40rem);
-}
-
-.about-intro h1 {
-  margin: 0;
-  font-size: clamp(2.75rem, 5vw, 4.5rem);
-  line-height: 1.02;
-}
-
-.about-intro p,
-.about-copy p {
-  color: var(--muted);
-  line-height: 1.8;
 }
 
 .about-grid {
@@ -536,74 +604,6 @@ main {
   color: var(--muted);
 }
 
-@media (max-width: 960px) {
-  .post-layout {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .post-toc {
-    position: static;
-    max-height: none;
-    overflow-y: visible;
-    padding-top: 2rem;
-    padding-right: 0;
-  }
-
-  .post-article {
-    width: 100%;
-  }
-}
-
-@media (max-width: 720px) {
-  .site-header,
-  .site-nav {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .page-shell,
-  .site-header,
-  .site-footer {
-    width: min(calc(100% - 24px), var(--max-width));
-  }
-
-  .hero {
-    padding: 3.5rem 0 3rem;
-  }
-
-  .featured-grid,
-  .about-grid {
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-
-  .search-page,
-  .about-page {
-    padding: 3rem 0 3.5rem;
-  }
-
-  .about-card + .about-card,
-  .about-contact {
-    margin-top: 1rem;
-  }
-
-  .about-links li {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-.archive-page {
-  width: min(100%, 920px);
-  margin: 0 auto;
-  padding: 4rem 0 4.5rem;
-}
-
-.archive-hero {
-  width: min(100%, 40rem);
-}
-
 .archive-year + .archive-year {
   margin-top: 2.5rem;
 }
@@ -625,18 +625,6 @@ main {
   gap: 0.25rem;
   padding: 0.85rem 0;
   border-bottom: 1px solid var(--line);
-}
-
-.archive-list a,
-.post-series a,
-.post-series span {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.archive-list time,
-.archive-empty {
-  color: var(--muted);
 }
 
 .post-series {
@@ -663,4 +651,61 @@ main {
 
 .post-series span[aria-current='true'] {
   font-weight: 600;
+}
+
+@media (max-width: 960px) {
+  .post-layout {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .post-toc {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+    padding-top: 2rem;
+    padding-right: 0;
+  }
+
+  .post-article {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .site-header,
+  .site-nav,
+  .trending-preview-heading,
+  .about-links li {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .page-shell,
+  .site-header,
+  .site-footer {
+    width: min(calc(100% - 24px), var(--max-width));
+  }
+
+  .hero {
+    padding: 3.5rem 0 3rem;
+  }
+
+  .featured-grid,
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .search-page,
+  .about-page,
+  .archive-page,
+  .trending-page {
+    padding: 3rem 0 3.5rem;
+  }
+
+  .about-card + .about-card,
+  .about-contact {
+    margin-top: 1rem;
+  }
 }

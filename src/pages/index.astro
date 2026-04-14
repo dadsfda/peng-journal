@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import FeaturedPosts from '../components/FeaturedPosts.astro';
 import Hero from '../components/Hero.astro';
 import PostList from '../components/PostList.astro';
+import TrendingPreview from '../components/TrendingPreview.astro';
 import { siteConfig } from '../data/site';
 import { getFeaturedPosts, getPublishedPosts } from '../lib/blog';
 import BaseLayout from '../layouts/BaseLayout.astro';
@@ -14,6 +15,7 @@ const latestPosts = allPosts.slice(0, 5);
 
 <BaseLayout title={siteConfig.title} description={siteConfig.description}>
   <Hero />
+  <TrendingPreview />
   <FeaturedPosts posts={featuredPosts} />
   <PostList title="最新文章" posts={latestPosts} />
 </BaseLayout>
