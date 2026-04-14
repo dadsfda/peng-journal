@@ -3,6 +3,7 @@ title: AI 智能体构建总结
 description: 从概念、执行循环到 OpenManus 拆解，梳理 AI 智能体从理解到落地的一条清晰路径。
 pubDate: 2026-04-13
 updatedDate: 2026-04-14
+series: AI 智能体实践
 tags:
   - AI 智能体
   - OpenManus
@@ -185,3 +186,4 @@ featured: false
 - 第三步：自己实现一个最小版 `BaseAgent -> ReActAgent -> ToolCallAgent`
 - 第四步：接入一个浏览器工具和一个代码执行工具
 - 第五步：再去学 `MCP`、工作流框架、多智能体协作
+

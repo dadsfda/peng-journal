@@ -1,12 +1,12 @@
----
+﻿---
 import { getCollection } from 'astro:content';
 import PostList from '../../components/PostList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { sortPostsByDateDesc } from '../../lib/blog';
+import { getPublishedPosts } from '../../lib/blog';
 
-const posts = sortPostsByDateDesc(await getCollection('blog'));
+const posts = getPublishedPosts(await getCollection('blog'));
 ---
 
-<BaseLayout title={'\u5168\u90e8\u6587\u7ae0'} description={'\u6309\u65f6\u95f4\u6d4f\u89c8\u5168\u90e8\u6587\u7ae0\u3002'}>
-  <PostList title={'\u5168\u90e8\u6587\u7ae0'} posts={posts} />
+<BaseLayout title={'全部文章'} description={'按时间浏览全部文章。'}>
+  <PostList title={'全部文章'} posts={posts} />
 </BaseLayout>

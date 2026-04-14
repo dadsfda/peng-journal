@@ -4,9 +4,12 @@ import { describe, expect, test } from 'vitest';
 import {
   getAdjacentPosts,
   getAllTags,
+  getArchiveGroups,
   getFeaturedPosts,
   getPostPermalink,
+  getPublishedPosts,
   getSearchIndex,
+  getSeriesPosts,
   getTableOfContents,
   getTagPermalink,
   getTagSlug,
@@ -21,7 +24,8 @@ const posts = [
       description: 'desc',
       pubDate: new Date('2026-04-01'),
       tags: ['Astro', 'Design'],
-      featured: false
+      featured: false,
+      draft: false
     }
   },
   {
@@ -31,7 +35,8 @@ const posts = [
       description: 'desc',
       pubDate: new Date('2026-04-12'),
       tags: ['Design'],
-      featured: true
+      featured: true,
+      draft: false
     }
   }
 ] satisfies BlogPost[];
@@ -45,6 +50,123 @@ describe('blog utils', () => {
   test('筛选精选文章', () => {
     const featured = getFeaturedPosts(posts);
     expect(featured.map((post) => post.id)).toEqual(['b']);
+  });
+
+  test('draft 文章不会进入公开文章集合', () => {
+    const published = getPublishedPosts([
+      {
+        id: 'published',
+        data: {
+          title: 'Published',
+          description: 'desc',
+          pubDate: new Date('2026-04-12'),
+          tags: ['Astro'],
+          featured: false,
+          draft: false
+        }
+      },
+      {
+        id: 'draft',
+        data: {
+          title: 'Draft',
+          description: 'desc',
+          pubDate: new Date('2026-04-13'),
+          tags: ['Astro'],
+          featured: false,
+          draft: true
+        }
+      }
+    ] satisfies BlogPost[]);
+
+    expect(published.map((post) => post.id)).toEqual(['published']);
+  });
+
+  test('按年和月分组归档数据', () => {
+    const groups = getArchiveGroups([
+      {
+        id: 'march-post',
+        data: {
+          title: 'March',
+          description: 'desc',
+          pubDate: new Date('2026-03-20'),
+          tags: ['Astro'],
+          featured: false,
+          draft: false
+        }
+      },
+      {
+        id: 'april-post',
+        data: {
+          title: 'April',
+          description: 'desc',
+          pubDate: new Date('2026-04-12'),
+          tags: ['Astro'],
+          featured: false,
+          draft: false
+        }
+      }
+    ] satisfies BlogPost[]);
+
+    expect(groups).toEqual([
+      {
+        year: 2026,
+        months: [
+          {
+            month: 4,
+            label: '04 月',
+            posts: [expect.objectContaining({ id: 'april-post' })]
+          },
+          {
+            month: 3,
+            label: '03 月',
+            posts: [expect.objectContaining({ id: 'march-post' })]
+          }
+        ]
+      }
+    ]);
+  });
+
+  test('返回同系列的公开文章并按时间排序', () => {
+    const seriesPosts = getSeriesPosts([
+      {
+        id: 'draft-post',
+        data: {
+          title: 'Draft',
+          description: 'desc',
+          pubDate: new Date('2026-04-13'),
+          tags: ['Astro'],
+          featured: false,
+          draft: true,
+          series: 'Astro 博客搭建'
+        }
+      },
+      {
+        id: 'part-1',
+        data: {
+          title: 'Part 1',
+          description: 'desc',
+          pubDate: new Date('2026-04-01'),
+          tags: ['Astro'],
+          featured: false,
+          draft: false,
+          series: 'Astro 博客搭建'
+        }
+      },
+      {
+        id: 'part-2',
+        data: {
+          title: 'Part 2',
+          description: 'desc',
+          pubDate: new Date('2026-04-10'),
+          tags: ['Astro'],
+          featured: false,
+          draft: false,
+          series: 'Astro 博客搭建'
+        }
+      }
+    ] satisfies BlogPost[], 'Astro 博客搭建');
+
+    expect(seriesPosts.map((post) => post.id)).toEqual(['part-2', 'part-1']);
   });
 
   test('聚合标签并按字母排序', () => {
@@ -64,7 +186,8 @@ describe('blog utils', () => {
           description: 'desc',
           pubDate: new Date('2026-04-13'),
           tags: [],
-          featured: false
+          featured: false,
+          draft: false
         }
       }
     ] satisfies BlogPost[]);
@@ -81,7 +204,8 @@ describe('blog utils', () => {
           description: 'desc',
           pubDate: new Date('2026-04-14'),
           tags: ['Astro', 'astro', ' Astro '],
-          featured: false
+          featured: false,
+          draft: false
         }
       }
     ] satisfies BlogPost[]);
@@ -108,7 +232,8 @@ describe('blog utils', () => {
           description: 'desc',
           pubDate: new Date('2026-04-08'),
           tags: ['Astro'],
-          featured: true
+          featured: true,
+          draft: false
         }
       }
     ] satisfies BlogPost[];

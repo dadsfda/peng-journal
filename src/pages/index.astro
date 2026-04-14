@@ -4,10 +4,10 @@ import FeaturedPosts from '../components/FeaturedPosts.astro';
 import Hero from '../components/Hero.astro';
 import PostList from '../components/PostList.astro';
 import { siteConfig } from '../data/site';
-import { getFeaturedPosts, sortPostsByDateDesc } from '../lib/blog';
+import { getFeaturedPosts, getPublishedPosts } from '../lib/blog';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const allPosts = sortPostsByDateDesc(await getCollection('blog'));
+const allPosts = getPublishedPosts(await getCollection('blog'));
 const featuredPosts = getFeaturedPosts(allPosts).slice(0, 2);
 const latestPosts = allPosts.slice(0, 5);
 ---

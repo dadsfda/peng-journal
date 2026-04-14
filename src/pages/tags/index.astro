@@ -1,12 +1,13 @@
----
+﻿---
 import { getCollection } from 'astro:content';
 import TagCloud from '../../components/TagCloud.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getAllTags } from '../../lib/blog';
+import { getAllTags, getPublishedPosts } from '../../lib/blog';
 
-const tags = getAllTags(await getCollection('blog'));
+const posts = getPublishedPosts(await getCollection('blog'));
+const tags = getAllTags(posts);
 ---
 
-<BaseLayout title={'\u5168\u90e8\u6807\u7b7e'} description={'\u6309\u4e3b\u9898\u6d4f\u89c8\u6587\u7ae0\u3002'}>
+<BaseLayout title={'全部标签'} description={'按主题浏览文章。'}>
   <TagCloud tags={tags} />
 </BaseLayout>

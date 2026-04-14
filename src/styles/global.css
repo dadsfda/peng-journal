@@ -593,3 +593,74 @@ main {
     align-items: flex-start;
   }
 }
+
+.archive-page {
+  width: min(100%, 920px);
+  margin: 0 auto;
+  padding: 4rem 0 4.5rem;
+}
+
+.archive-hero {
+  width: min(100%, 40rem);
+}
+
+.archive-year + .archive-year {
+  margin-top: 2.5rem;
+}
+
+.archive-month + .archive-month {
+  margin-top: 1.5rem;
+}
+
+.archive-list {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.archive-list li {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.archive-list a,
+.post-series a,
+.post-series span {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.archive-list time,
+.archive-empty {
+  color: var(--muted);
+}
+
+.post-series {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--line);
+}
+
+.post-series h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.post-series ol {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.post-series li::marker {
+  color: var(--muted);
+}
+
+.post-series span[aria-current='true'] {
+  font-weight: 600;
+}

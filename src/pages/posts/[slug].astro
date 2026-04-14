@@ -3,10 +3,17 @@ import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostMeta from '../../components/PostMeta.astro';
 import PostTableOfContents from '../../components/PostTableOfContents.astro';
-import { getAdjacentPosts, getPostPermalink, getPostSlug, getTableOfContents } from '../../lib/blog';
+import {
+  getAdjacentPosts,
+  getPostPermalink,
+  getPostSlug,
+  getPublishedPosts,
+  getSeriesPosts,
+  getTableOfContents
+} from '../../lib/blog';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('blog');
+  const posts = getPublishedPosts(await getCollection('blog'));
   return posts.map((post) => ({
     params: { slug: getPostSlug(post) },
     props: { post }
@@ -15,9 +22,10 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content, headings } = await post.render();
-const allPosts = await getCollection('blog');
+const allPosts = getPublishedPosts(await getCollection('blog'));
 const { previousPost, nextPost } = getAdjacentPosts(allPosts, post);
 const tableOfContents = getTableOfContents(headings);
+const seriesPosts = post.data.series ? getSeriesPosts(allPosts, post.data.series) : [];
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
@@ -32,6 +40,26 @@ const tableOfContents = getTableOfContents(headings);
       <div class="post-body" data-post-content>
         <Content />
       </div>
+      {seriesPosts.length > 0 && (
+        <section class="post-series" aria-label="系列文章">
+          <p class="eyebrow">Series</p>
+          <h2>本系列文章</h2>
+          <ol>
+            {seriesPosts.map((seriesPost) => {
+              const isCurrent = getPostSlug(seriesPost) === getPostSlug(post);
+              return (
+                <li>
+                  {isCurrent ? (
+                    <span aria-current="true">{seriesPost.data.title}</span>
+                  ) : (
+                    <a href={getPostPermalink(seriesPost)}>{seriesPost.data.title}</a>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+        </section>
+      )}
       {(previousPost || nextPost) && (
         <nav class="post-pagination" aria-label={'文章分页'}>
           {previousPost && <a href={getPostPermalink(previousPost)}>{'上一篇：'}{previousPost.data.title}</a>}
