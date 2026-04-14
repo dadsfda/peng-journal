@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg: #f5f5f2;
   --surface: rgba(255, 255, 255, 0.72);
   --text: #141414;
@@ -160,11 +160,19 @@ main {
   text-decoration: none;
 }
 
+.trending-preview-shell {
+  padding: 0.35rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.56);
+}
+
 .trending-subtitle,
 .trending-empty,
 .trending-item p,
 .trending-meta,
 .trending-preview-item p,
+.trending-preview-meta,
 .trending-hero p,
 .archive-list time,
 .archive-empty,
@@ -186,10 +194,30 @@ main {
   list-style: none;
 }
 
+.trending-preview-list {
+  gap: 0;
+}
+
 .trending-preview-item,
 .trending-item {
   padding: 1rem 0;
   border-bottom: 1px solid var(--line);
+}
+
+.trending-preview-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: start;
+  padding: 1.1rem 0;
+}
+
+.trending-preview-item:last-child {
+  border-bottom: 0;
+}
+
+.trending-preview-main {
+  min-width: 0;
 }
 
 .trending-preview-item a,
@@ -211,11 +239,22 @@ main {
   font-size: 1.05rem;
 }
 
+.trending-preview-item p {
+  margin: 0.45rem 0 0;
+  line-height: 1.55;
+}
+
+.trending-preview-meta,
 .trending-meta {
   display: flex;
   gap: 0.75rem;
   margin-top: 0.5rem;
   font-size: 0.95rem;
+}
+
+.trending-preview-meta {
+  margin-top: 0;
+  white-space: nowrap;
 }
 
 .trending-page,

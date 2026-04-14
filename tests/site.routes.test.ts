@@ -226,11 +226,12 @@ describe('task 6 route files', () => {
       'src/pages/search.astro',
       'src/pages/rss.xml.ts',
       'src/pages/trending.astro',
-      'src/pages/api/trending.ts'
+      'src/pages/api/trending/daily.ts',
+      'src/pages/api/trending/weekly.ts'
     ];
 
     const checks = await Promise.all(files.map((file) => access(file).then(() => true).catch(() => false)));
-    expect(checks).toEqual([true, true, true, true, true, true, true, true, true, true]);
+    expect(checks).toEqual([true, true, true, true, true, true, true, true, true, true, true]);
   });
 });
 
@@ -259,8 +260,8 @@ describe('trending page', () => {
     expect(html).toContain('GitHub Trending');
     expect(html).toContain('今日热点');
     expect(html).toContain('本周热点');
-    expect(html).toContain('/api/trending?since=daily');
-    expect(html).toContain('/api/trending?since=weekly');
+    expect(html).toContain('/api/trending/daily');
+    expect(html).toContain('/api/trending/weekly');
   });
 
   test('trending 页面包含页面结构类名和空状态钩子', () => {

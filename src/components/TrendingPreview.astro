@@ -1,4 +1,4 @@
-﻿<section class="trending-preview" data-trending-preview data-trending-endpoint="/api/trending?since=daily">
+﻿<section class="trending-preview" data-trending-preview data-trending-endpoint="/api/trending/daily">
   <div class="section-heading trending-preview-heading">
     <div>
       <p class="eyebrow">Trending</p>
@@ -8,9 +8,11 @@
     <a href="/trending/">查看完整榜单</a>
   </div>
 
-  <p class="trending-empty" data-trending-loading>正在加载热点数据...</p>
-  <p class="trending-empty" data-trending-error hidden>暂时无法获取热点数据。</p>
-  <ul class="trending-preview-list" data-trending-list hidden></ul>
+  <div class="trending-preview-shell">
+    <p class="trending-empty" data-trending-loading>正在加载热点数据...</p>
+    <p class="trending-empty" data-trending-error hidden>暂时无法获取热点数据。</p>
+    <ul class="trending-preview-list" data-trending-list hidden></ul>
+  </div>
 </section>
 
 <script is:inline>
@@ -33,12 +35,18 @@
           return;
         }
 
-        const items = payload.projects.slice(0, 5).map((project) => {
+        const items = payload.projects.slice(0, 3).map((project) => {
           const item = document.createElement('li');
           item.className = 'trending-preview-item';
           item.innerHTML = `
-            <a href="${project.url}" target="_blank" rel="noreferrer">${project.owner}/${project.name}</a>
-            <p>${project.description ?? ''}</p>
+            <div class="trending-preview-main">
+              <a href="${project.url}" target="_blank" rel="noreferrer">${project.owner}/${project.name}</a>
+              <p>${project.description ?? ''}</p>
+            </div>
+            <div class="trending-preview-meta">
+              <span>${project.language ?? 'Unknown'}</span>
+              <span>${project.starsToday ? `+${project.starsToday}` : '暂无增量'}</span>
+            </div>
           `;
           return item;
         });
