@@ -4,3 +4,5 @@ dist/
 .codex-dev.log
 docs
 AGENTS.md
+.worktrees/
+
