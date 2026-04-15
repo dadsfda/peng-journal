@@ -121,6 +121,352 @@ featured: false
 - `ToolCallAgent`：实现工具调用
 - `YuManus`：封装成可直接调用的最终智能体实例
 
+#### 首先定义数据模型
+
+目前我们只⁠需要定义 Agen‌t 的状态枚举，用于控制智能体的执行‎。AgentSta‌te 代码如下：
+
+```java
+public enum AgentState {  
+  
+      
+    IDLE,  
+  
+      
+    RUNNING,  
+  
+      
+    FINISHED,  
+  
+      
+    ERROR  
+}
+```
+
+#### 1、开发基础 Agent 类
+
+参考 Op⁠enManus 的‌实现方式，BaseAgent 的代码‎如下：
+
+```java
+@Data  
+@Slf4j  
+public abstract class BaseAgent {  
+  
+    
+    private String name;  
+  
+    
+    private String systemPrompt;  
+    private String nextStepPrompt;  
+  
+    
+    private AgentState state = AgentState.IDLE;  
+  
+    
+    private int maxSteps = 10;  
+    private int currentStep = 0;  
+  
+    
+    private ChatClient chatClient;  
+  
+    
+    private List<Message> messageList = new ArrayList<>();  
+  
+      
+    public String run(String userPrompt) {  
+        if (this.state != AgentState.IDLE) {  
+            throw new RuntimeException("Cannot run agent from state: " + this.state);  
+        }  
+        if (StringUtil.isBlank(userPrompt)) {  
+            throw new RuntimeException("Cannot run agent with empty user prompt");  
+        }  
+        
+        state = AgentState.RUNNING;  
+        
+        messageList.add(new UserMessage(userPrompt));  
+        
+        List<String> results = new ArrayList<>();  
+        try {  
+            for (int i = 0; i < maxSteps && state != AgentState.FINISHED; i++) {  
+                int stepNumber = i + 1;  
+                currentStep = stepNumber;  
+                log.info("Executing step " + stepNumber + "/" + maxSteps);  
+                
+                String stepResult = step();  
+                String result = "Step " + stepNumber + ": " + stepResult;  
+                results.add(result);  
+            }  
+            
+            if (currentStep >= maxSteps) {  
+                state = AgentState.FINISHED;  
+                results.add("Terminated: Reached max steps (" + maxSteps + ")");  
+            }  
+            return String.join("\n", results);  
+        } catch (Exception e) {  
+            state = AgentState.ERROR;  
+            log.error("Error executing agent", e);  
+            return "执行错误" + e.getMessage();  
+        } finally {  
+            
+            this.cleanup();  
+        }  
+    }  
+  
+      
+    public abstract String step();  
+  
+      
+    protected void cleanup() {  
+        
+    }  
+}
+```
+
+上述代码中，我们要注意 3 点：
+
+1. 包含 chatClient 属性，由调用方传入具体调用大模型的对象，而不是写死使用的大模型，更灵活
+2. 包含 messageList 属性，用于维护消息上下文列表
+3. 通过 state 属性来控制智能体的执行流程
+
+#### 2、开发 ReActAgent 类
+
+参考 OpenM⁠anus 的实现方式，继承自 ‌BaseAgent，并且将 step 方法分解为 think‎ 和 act 两个抽象方法。R‌eActAgent 的代码如下：
+
+```java
+@EqualsAndHashCode(callSuper = true)  
+@Data  
+public abstract class ReActAgent extends BaseAgent {  
+  
+      
+    public abstract boolean think();  
+  
+      
+    public abstract String act();  
+  
+      
+    @Override  
+    public String step() {  
+        try {  
+            boolean shouldAct = think();  
+            if (!shouldAct) {  
+                return "思考完成 - 无需行动";  
+            }  
+            return act();  
+        } catch (Exception e) {  
+            
+            e.printStackTrace();  
+            return "步骤执行失败: " + e.getMessage();  
+        }  
+    }  java
+}
+```
+
+#### 3、开发 ToolCallAgent 类
+
+ToolCa⁠llAgent 负责实现‌工具调用能力，继承自 ReActAgent，具体‎实现了 think 和 ‌act 两个抽象方法。
+
+我们有 3 种方案来实现 ToolCallAgent：
+
+1）基于 ⁠Spring AI‌ 的工具调用能力，手动控制工具执行。
+
+其实 Spring 的 ChatClient 已经支持选择工具进行调用（内部完成了 think、act、observe），但这里我们要自主实现，可以使用 Spring AI 提供的 [手动控制工具执行](https://docs.spring.io/spring-ai/reference/api/tools.html#_user_controlled_tool_execution)。
+
+2）基于 ⁠Spring AI‌ 的工具调用能力，简化调用流程。
+
+由于 Spr⁠ing AI 完全托管了‌工具调用，我们可以直接把所有工具调用的代码作为 ‎think 方法，而 a‌ct 方法不定义任何动作。
+
+3）自主实现工具调用能力。
+
+也就是工具调用⁠章节提到的实现原理：自己写‌ Prompt，引导 AI 回复想要调用的工具列表和‎调用参数，然后再执行工具并‌将结果返送给 AI 再次执行。
+
+使用哪种方案呢？
+
+如果是为了学⁠习 ReAct 模式，让‌流程更清晰，推荐第一种；如果只是为了快速实现，推‎荐第二种；不建议采用第三‌种方案，过于原生，开发成本高。
+
+我们还需要定义一‌个终止工具，让智能体可以自行决定任‎务结束。
+
+1）在 tools 包下新建 TerminateTool：
+
+```java
+public class TerminateTool {  
+  
+    @Tool(description = """  
+            Terminate the interaction when the request is met OR if the assistant cannot proceed further with the task.  
+            "When you have finished all the tasks, call this tool to end the work.  
+            """)  
+    public String doTerminate() {  
+        return "任务结束";  
+    }  
+}
+```
+
+2）修改 ToolRegistration，注册中止工具：
+
+```java
+TerminateTool terminateTool = new TerminateTool();  
+  
+return ToolCallbacks.from(  
+        fileOperationTool,  
+        webSearchTool,  
+        webScrapingTool,  
+        resourceDownloadTool,  
+        terminalOperationTool,  
+        pdfGenerationTool,  
+        terminateTool  
+);
+```
+
+为了学习，我们采⁠用第一种方案实现 ‌ToolCallAgent
+
+```java
+
+/**
+ * 处理工具调用的基础代理类，具体实现了 think 和 act 方法，可以用作创建实例的父类
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Slf4j
+public class ToolCallAgent extends ReActAgent {
+
+    // 可用的工具
+    private final ToolCallback[] availableTools;
+
+    // 保存工具调用信息的响应结果（要调用那些工具）
+    private ChatResponse toolCallChatResponse;
+
+    // 工具调用管理者
+    private final ToolCallingManager toolCallingManager;
+
+    // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文
+    private final ChatOptions chatOptions;
+
+    public ToolCallAgent(ToolCallback[] availableTools) {
+        super();
+        this.availableTools = availableTools;
+        this.toolCallingManager = ToolCallingManager.builder().build();
+        // 禁用 Spring AI 内置的工具调用机制，自己维护选项和消息上下文
+        this.chatOptions = DashScopeChatOptions.builder()
+                .withInternalToolExecutionEnabled(false)
+                .build();
+    }
+
+    /**
+     * 处理当前状态并决定下一步行动
+     *
+     * @return 是否需要执行行动
+     */
+    @Override
+    public boolean think() {
+        // 1、校验提示词，拼接用户提示词
+        if (StrUtil.isNotBlank(getNextStepPrompt())) {
+            UserMessage userMessage = new UserMessage(getNextStepPrompt());
+            getMessageList().add(userMessage);
+        }
+        // 2、调用 AI 大模型，获取工具调用结果
+        List<Message> messageList = getMessageList();
+        Prompt prompt = new Prompt(messageList, this.chatOptions);
+        try {
+            ChatResponse chatResponse = getChatClient().prompt(prompt)
+                    .system(getSystemPrompt())
+                    .tools(availableTools)
+                    .call()
+                    .chatResponse();
+            // 记录响应，用于等下 Act
+            this.toolCallChatResponse = chatResponse;
+            // 3、解析工具调用结果，获取要调用的工具
+            // 助手消息
+            AssistantMessage assistantMessage = chatResponse.getResult().getOutput();
+            // 获取要调用的工具列表
+            List<AssistantMessage.ToolCall> toolCallList = assistantMessage.getToolCalls();
+            // 输出提示信息
+            String result = assistantMessage.getText();
+            log.info(getName() + "的思考：" + result);
+            log.info(getName() + "选择了 " + toolCallList.size() + " 个工具来使用");
+            String toolCallInfo = toolCallList.stream()
+                    .map(toolCall -> String.format("工具名称：%s，参数：%s", toolCall.name(), toolCall.arguments()))
+                    .collect(Collectors.joining("\n"));
+            log.info(toolCallInfo);
+            // 如果不需要调用工具，返回 false
+            if (toolCallList.isEmpty()) {
+                // 只有不调用工具时，才需要手动记录助手消息
+                getMessageList().add(assistantMessage);
+                return false;
+            } else {
+                // 需要调用工具时，无需记录助手消息，因为调用工具时会自动记录
+                return true;
+            }
+        } catch (Exception e) {
+            log.error(getName() + "的思考过程遇到了问题：" + e.getMessage());
+            getMessageList().add(new AssistantMessage("处理时遇到了错误：" + e.getMessage()));
+            return false;
+        }
+    }
+
+    /**
+     * 执行工具调用并处理结果
+     *
+     * @return 执行结果
+     */
+    @Override
+    public String act() {
+        if (!toolCallChatResponse.hasToolCalls()) {
+            return "没有工具需要调用";
+        }
+        // 调用工具
+        Prompt prompt = new Prompt(getMessageList(), this.chatOptions);
+        ToolExecutionResult toolExecutionResult = toolCallingManager.executeToolCalls(prompt, toolCallChatResponse);
+        // 记录消息上下文，conversationHistory 已经包含了助手消息和工具调用返回的结果
+        setMessageList(toolExecutionResult.conversationHistory());
+        ToolResponseMessage toolResponseMessage = (ToolResponseMessage) CollUtil.getLast(toolExecutionResult.conversationHistory());
+        // 判断是否调用了终止工具
+        boolean terminateToolCalled = toolResponseMessage.getResponses().stream()
+                .anyMatch(response -> response.name().equals("doTerminate"));
+        if (terminateToolCalled) {
+            // 任务结束，更改状态
+            setState(AgentState.FINISHED);
+        }
+        String results = toolResponseMessage.getResponses().stream()
+                .map(response -> "工具 " + response.name() + " 返回的结果：" + response.responseData())
+                .collect(Collectors.joining("\n"));
+        log.info(results);
+        return results;
+    }
+}
+
+```
+
+#### 4、开发 Manus 类
+
+Manus 是⁠可以直接提供给其他方法调用的 AI‌ 超级智能体实例，继承自 ToolCallAgent，需要给智能体设‎置各种参数，比如对话客户端 cha‌tClient、工具调用列表等。
+
+```java
+@Component  
+public class YuManus extends ToolCallAgent {  
+  
+    public YuManus(ToolCallback[] allTools, ChatModel dashscopeChatModel) {  
+        super(allTools);  
+        this.setName("yuManus");  
+        String SYSTEM_PROMPT = """  
+                You are YuManus, an all-capable AI assistant, aimed at solving any task presented by the user.  
+                You have various tools at your disposal that you can call upon to efficiently complete complex requests.  
+                """;  
+        this.setSystemPrompt(SYSTEM_PROMPT);  
+        String NEXT_STEP_PROMPT = """  
+                Based on user needs, proactively select the most appropriate tool or combination of tools.  
+                For complex tasks, you can break down the problem and use different tools step by step to solve it.  
+                After using each tool, clearly explain the execution results and suggest the next steps.  
+                If you want to stop the interaction at any point, use the `terminate` tool/function call.  
+                """;  
+        this.setNextStepPrompt(NEXT_STEP_PROMPT);  
+        this.setMaxSteps(20);  
+        
+        ChatClient chatClient = ChatClient.builder(dashscopeChatModel)  
+                .defaultAdvisors(new MyLoggerAdvisor())  
+                .build();  
+        this.setChatClient(chatClient);  
+    }  
+}
+```
+
 一个合理的开发顺序是：
 
 1. 先让单步循环能跑通
