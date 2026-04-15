@@ -6,7 +6,7 @@ pubDate: 2026-04-12
 tags:
   - 设计
   - 阅读体验
-featured: true
+featured: false
 ---
 
 好的博客不一定要让人惊叹，但应该让人愿意停留。

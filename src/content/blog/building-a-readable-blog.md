@@ -7,7 +7,7 @@ tags:
   - Astro
   - 前端
   - 阅读体验
-featured: true
+featured: false
 ---
 
 阅读体验不是装饰问题，而是信息组织问题。

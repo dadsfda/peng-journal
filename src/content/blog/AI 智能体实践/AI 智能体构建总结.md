@@ -9,7 +9,7 @@ tags:
   - AI 智能体
   - OpenManus
   - MCP
-featured: false
+featured: true
 ---
 
 ## 一句话概括

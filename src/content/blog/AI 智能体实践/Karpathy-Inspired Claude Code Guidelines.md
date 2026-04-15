@@ -7,7 +7,7 @@ series: AI 智能体实践
 tags:
   - Agent
   - 编码规范
-featured: false
+featured: true
 ---
 
 # Karpathy-Inspired Claude Code Guidelines
