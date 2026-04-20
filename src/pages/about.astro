@@ -1,10 +1,10 @@
-﻿---
+---
 import { siteConfig } from '../data/site';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const pageTitle = `关于 | ${siteConfig.title}`;
 const pageDescription = '了解作者的关注方向、写作主题与联系方式。';
-const focusAreas = ['设计与排版', '前端体验', '长期写作'];
+const focusAreas = ['AI 学习与实践', '智能体构建', '编程与工程记录'];
 const links = [
   { label: '邮箱', value: siteConfig.email, href: `mailto:${siteConfig.email}` },
   { label: '地点', value: siteConfig.location }
@@ -17,8 +17,8 @@ const links = [
     <div class="about-intro">
       <h1>关于这个站点</h1>
       <p>
-        {siteConfig.title} 是一个偏安静、偏长期的个人博客。我会在这里记录值得反复阅读的文章，
-        也会整理一些和设计、前端体验、写作方法有关的思考。
+        {siteConfig.title} 是一个以 AI 内容为主的个人技术博客。我会在这里记录 AI 学习、
+        智能体实践、编程过程中的经验总结，也会保留一部分更宽泛的技术记录与个人思考。
       </p>
     </div>
 
