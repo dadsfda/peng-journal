@@ -1,7 +1,10 @@
 ﻿import { afterEach, describe, expect, test, vi } from 'vitest';
-import { GET as GETDaily } from '../src/pages/api/trending/daily';
-import { GET as GETWeekly } from '../src/pages/api/trending/weekly';
+import * as dailyRoute from '../src/pages/api/trending/daily';
+import * as weeklyRoute from '../src/pages/api/trending/weekly';
 import { getTrendingProjects, normalizeTrendingProject, parseTrendingProjectsFromHtml } from '../src/lib/trending';
+
+const { GET: GETDaily } = dailyRoute;
+const { GET: GETWeekly } = weeklyRoute;
 
 const sampleHtml = `
 <article class="Box-row">
@@ -138,5 +141,10 @@ describe('trending service', () => {
     expect(response.headers.get('cache-control')).toContain('s-maxage=1800');
     const payload = await response.json();
     expect(payload).toEqual({ ok: true, since: 'weekly', projects: [] });
+  });
+
+  test('trending API 路由关闭预渲染，确保按请求执行', () => {
+    expect(dailyRoute.prerender).toBe(false);
+    expect(weeklyRoute.prerender).toBe(false);
   });
 });

@@ -1,4 +1,6 @@
-﻿import type { APIRoute } from 'astro';
+export const prerender = false;
+
+import type { APIRoute } from 'astro';
 import { getTrendingProjects } from '../../../lib/trending';
 
 const CACHE_CONTROL = 'public, max-age=0, s-maxage=1800, stale-while-revalidate=3600';
