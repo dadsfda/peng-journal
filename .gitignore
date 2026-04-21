@@ -2,7 +2,7 @@ node_modules/
 .astro/
 dist/
 .vercel/
-.log
+*.log
 docs
 AGENTS.md
 .worktrees/
