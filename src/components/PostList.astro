@@ -1,23 +1,39 @@
-﻿---
-import type { BlogPost } from '../lib/blog';
-import { getPostPermalink } from '../lib/blog';
+---
+import type { BlogCategoryGroup, BlogPost } from '../lib/blog';
+import { getPostCategorySlug, getPostPermalink } from '../lib/blog';
 import PostMeta from './PostMeta.astro';
 
 interface Props {
   title: string;
   posts: BlogPost[];
+  groups?: BlogCategoryGroup[];
 }
 
-const { title, posts } = Astro.props;
+const { title, posts, groups } = Astro.props;
 ---
 
-<section class="post-list-section">
-  <div class="section-heading">
+<section class="post-list-section" data-post-list-section={groups ? 'filterable' : undefined}>
+  <div class:list={['section-heading', groups && 'section-heading--with-actions']}>
     <h2>{title}</h2>
+
+    {
+      groups && (
+        <div class="post-category-filter" data-post-filter>
+          <button type="button" class="is-active" data-filter-button="all" aria-pressed="true">
+            全部
+          </button>
+          {groups.map((group) => (
+            <button type="button" data-filter-button={group.slug} aria-pressed="false">
+              {group.name}
+            </button>
+          ))}
+        </div>
+      )
+    }
   </div>
   <div class="post-list">
     {posts.map((post) => (
-      <article class="post-row">
+      <article class="post-row" data-post-category={getPostCategorySlug(post)}>
         <PostMeta post={post} />
         <h3><a href={getPostPermalink(post)}>{post.data.title}</a></h3>
         <p>{post.data.description}</p>
@@ -25,3 +41,38 @@ const { title, posts } = Astro.props;
     ))}
   </div>
 </section>
+
+{
+  groups && (
+    <script is:inline>
+      (() => {
+        const sections = document.querySelectorAll('[data-post-list-section="filterable"]');
+
+        sections.forEach((section) => {
+          const buttons = Array.from(section.querySelectorAll('[data-filter-button]'));
+          const posts = Array.from(section.querySelectorAll('[data-post-category]'));
+
+          const setActiveFilter = (target) => {
+            buttons.forEach((button) => {
+              const active = button.getAttribute('data-filter-button') === target;
+              button.classList.toggle('is-active', active);
+              button.setAttribute('aria-pressed', active ? 'true' : 'false');
+            });
+
+            posts.forEach((post) => {
+              const category = post.getAttribute('data-post-category');
+              post.hidden = target !== 'all' && category !== target;
+            });
+          };
+
+          buttons.forEach((button) => {
+            button.addEventListener('click', () => {
+              const target = button.getAttribute('data-filter-button') || 'all';
+              setActiveFilter(target);
+            });
+          });
+        });
+      })();
+    </script>
+  )
+}

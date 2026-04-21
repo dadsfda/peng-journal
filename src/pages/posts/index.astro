@@ -1,12 +1,13 @@
-﻿---
+---
 import { getCollection } from 'astro:content';
 import PostList from '../../components/PostList.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPublishedPosts } from '../../lib/blog';
+import { getCategoryGroups, getPublishedPosts } from '../../lib/blog';
 
 const posts = getPublishedPosts(await getCollection('blog'));
+const categoryGroups = getCategoryGroups(posts);
 ---
 
 <BaseLayout title={'全部文章'} description={'按时间浏览全部文章。'}>
-  <PostList title={'全部文章'} posts={posts} />
+  <PostList title={'全部文章'} posts={posts} groups={categoryGroups} />
 </BaseLayout>

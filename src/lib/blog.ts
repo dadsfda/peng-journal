@@ -34,6 +34,14 @@ export type ArchiveYearGroup<T extends BlogPost = BlogPost> = {
   months: ArchiveMonthGroup<T>[];
 };
 
+export type BlogCategoryGroup<T extends BlogPost = BlogPost> = {
+  name: string;
+  slug: string;
+  posts: T[];
+};
+
+export const DEFAULT_CATEGORY_NAME = '其他文章';
+
 const trimSlashes = (value: string) => value.replace(/^\/+|\/+$/g, '');
 const stripMarkdownExtension = (value: string) => value.replace(/\.md$/i, '');
 const normalizeTagName = (value: string) => value.trim();
@@ -56,6 +64,10 @@ export const getTagSlug = (value: string) => {
 
 export const getTagPermalink = (value: string) => {
   return `/tags/${getTagSlug(value)}/`;
+};
+
+export const getCategorySlug = (value: string) => {
+  return encodeURIComponent(value.toLowerCase());
 };
 
 export const sortPostsByDateDesc = <T extends BlogPost>(posts: T[]) => {
@@ -104,6 +116,36 @@ export const getSearchIndex = <T extends BlogPost>(posts: T[]): SearchIndexItem[
 
 export const getSeriesPosts = <T extends BlogPost>(posts: T[], series: string) => {
   return getPublishedPosts(posts).filter((post) => post.data.series === series);
+};
+
+export const getPostCategoryName = <T extends BlogPost>(post: T) => {
+  return post.data.series?.trim() || DEFAULT_CATEGORY_NAME;
+};
+
+export const getPostCategorySlug = <T extends BlogPost>(post: T) => {
+  return getCategorySlug(getPostCategoryName(post));
+};
+
+export const getCategoryGroups = <T extends BlogPost>(posts: T[]): BlogCategoryGroup<T>[] => {
+  const groups = new Map<string, BlogCategoryGroup<T>>();
+
+  for (const post of getPublishedPosts(posts)) {
+    const name = getPostCategoryName(post);
+    const slug = getPostCategorySlug(post);
+    const current = groups.get(slug);
+
+    if (current) {
+      current.posts.push(post);
+    } else {
+      groups.set(slug, {
+        name,
+        slug,
+        posts: [post]
+      });
+    }
+  }
+
+  return [...groups.values()];
 };
 
 export const getArchiveGroups = <T extends BlogPost>(posts: T[]): ArchiveYearGroup<T>[] => {
