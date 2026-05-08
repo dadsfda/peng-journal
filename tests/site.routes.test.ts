@@ -196,28 +196,29 @@ describe('home page', () => {
     expect(html).toContain('/trending/');
     expect(html).toContain('精选文章');
     expect(html).toContain('最新文章');
-    expect(html).toContain('>Astro<');
 
     expect(featuredSection).toContain('/posts/how-i-structure-writing/');
     expect(featuredSection).toContain('/posts/ai-agent-building-summary/');
     expect(featuredSection).not.toContain('/posts/harness-engineering-for-ai-agents/');
 
+    expect(latestSection).toContain('/posts/harness-practice-automated-knowledge-video/');
+    expect(latestSection).toContain('/posts/agent-skills-knowledge-retrieval/');
     expect(latestSection).toContain('/posts/harness-engineering-for-ai-agents/');
     expect(latestSection).toContain('/posts/how-i-structure-writing/');
     expect(latestSection).toContain('/posts/ai-agent-building-summary/');
-    expect(latestSection).toContain('/posts/notes-on-quiet-design/');
-    expect(latestSection).toContain('/posts/building-a-readable-blog/');
+    expect(latestSection).not.toContain('/posts/notes-on-quiet-design/');
+    expect(latestSection).not.toContain('/posts/building-a-readable-blog/');
+    expect(latestSection.indexOf('/posts/agent-skills-knowledge-retrieval/')).toBeLessThan(
+      latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')
+    );
+    expect(latestSection.indexOf('/posts/harness-practice-automated-knowledge-video/')).toBeLessThan(
+      latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')
+    );
     expect(latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')).toBeLessThan(
       latestSection.indexOf('/posts/how-i-structure-writing/')
     );
     expect(latestSection.indexOf('/posts/how-i-structure-writing/')).toBeLessThan(
       latestSection.indexOf('/posts/ai-agent-building-summary/')
-    );
-    expect(latestSection.indexOf('/posts/ai-agent-building-summary/')).toBeLessThan(
-      latestSection.indexOf('/posts/notes-on-quiet-design/')
-    );
-    expect(latestSection.indexOf('/posts/notes-on-quiet-design/')).toBeLessThan(
-      latestSection.indexOf('/posts/building-a-readable-blog/')
     );
   });
 
