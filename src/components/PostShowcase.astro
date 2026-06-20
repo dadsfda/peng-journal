@@ -1,0 +1,142 @@
+---
+import type { BlogPost, BlogTag } from '../lib/blog';
+import { getPostPermalink } from '../lib/blog';
+
+interface Props {
+  posts: BlogPost[];
+  tags: BlogTag[];
+}
+
+const { posts, tags } = Astro.props;
+const coverImages: Record<string, string> = {
+  'harness-practice-automated-knowledge-video': '/images/post-covers/harness-video.png',
+  'agent-skills-knowledge-retrieval': '/images/post-covers/agent-skills-retrieval.png',
+  'harness-engineering-for-ai-agents': '/images/post-covers/harness-engineering.png',
+  'how-i-structure-writing': '/images/post-covers/claude-code-guidelines.png'
+};
+const floatingSquares = [
+  { x: 6, y: 20, size: 12 },
+  { x: 12, y: 32, size: 8 },
+  { x: 8, y: 44, size: 6 },
+  { x: 88, y: 18, size: 10 },
+  { x: 92, y: 30, size: 14 },
+  { x: 85, y: 42, size: 7 },
+  { x: 90, y: 52, size: 5 },
+  { x: 14, y: 56, size: 5 }
+];
+const pixelBlocks = Array.from({ length: 96 }, (_, index) => ({
+  row: Math.floor(index / 12),
+  col: index % 12
+}));
+const cardSquares = [
+  [
+    { x: 5, y: 30, size: 16 },
+    { x: 10, y: 42, size: 10 },
+    { x: 3, y: 52, size: 7 },
+    { x: 80, y: 70, size: 14 },
+    { x: 85, y: 82, size: 9 }
+  ],
+  [
+    { x: 82, y: 55, size: 16 },
+    { x: 88, y: 68, size: 10 },
+    { x: 78, y: 72, size: 7 },
+    { x: 85, y: 42, size: 6 },
+    { x: 90, y: 80, size: 8 }
+  ],
+  [
+    { x: 4, y: 24, size: 16 },
+    { x: 10, y: 36, size: 10 },
+    { x: 2, y: 44, size: 7 },
+    { x: 78, y: 78, size: 14 },
+    { x: 84, y: 88, size: 8 }
+  ],
+  [
+    { x: 82, y: 26, size: 14 },
+    { x: 88, y: 38, size: 10 },
+    { x: 78, y: 44, size: 7 },
+    { x: 84, y: 54, size: 5 },
+    { x: 90, y: 60, size: 8 }
+  ]
+];
+const marqueeTags = [...tags, ...tags];
+---
+
+<section class="post-showcase" aria-labelledby="post-showcase-title">
+  <div class="post-showcase-floaters" aria-hidden="true">
+    {floatingSquares.map((square, index) => (
+      <span
+        style={`--square-x: ${square.x}%; --square-y: ${square.y}%; --square-size: ${square.size}px; --square-delay: ${index * 0.3}s;`}
+      />
+    ))}
+  </div>
+
+  <div class="post-showcase-header">
+    <p class="post-showcase-badge">Articles</p>
+    <h2 id="post-showcase-title">精选文章</h2>
+  </div>
+
+  <div class="post-showcase-grid">
+    {posts.map((post, index) => {
+      const postYear = post.data.pubDate.getFullYear();
+      const primaryTag = post.data.tags[0] ?? post.data.series ?? '文章';
+      const squares = cardSquares[index % cardSquares.length];
+      const coverImage = coverImages[post.slug];
+
+      return (
+        <article class="post-showcase-card">
+          <a href={getPostPermalink(post)} aria-label={`阅读：${post.data.title}`}>
+            <div class="post-showcase-card-bg" aria-hidden="true">
+              {coverImage ? (
+                <img src={coverImage} alt="" loading={index === 0 ? 'eager' : 'lazy'} decoding="async" />
+              ) : (
+                <span>{String(index + 1).padStart(2, '0')}</span>
+              )}
+            </div>
+            <div class="post-showcase-pixels" aria-hidden="true">
+              {pixelBlocks.map((block) => (
+                <span style={`--pixel-row: ${block.row}; --pixel-col: ${block.col};`} />
+              ))}
+            </div>
+            <div class="post-showcase-card-squares" aria-hidden="true">
+              {squares.map((square) => (
+                <span style={`--card-square-x: ${square.x}%; --card-square-y: ${square.y}%; --card-square-size: ${square.size}px;`} />
+              ))}
+            </div>
+            <span class="post-showcase-plus">+</span>
+            <div class="post-showcase-plate">
+              <h3>{post.data.title}</h3>
+              <p>
+                <span>{primaryTag}</span>
+                <span>{postYear}</span>
+              </p>
+            </div>
+          </a>
+        </article>
+      );
+    })}
+  </div>
+
+  <footer class="post-showcase-footer">
+    <div class="post-showcase-note">
+      <span aria-hidden="true">+</span>
+      <p>围绕 AI 智能体、编程实践与长期写作，把零散思考整理成可以反复回看的技术文章。</p>
+      <a href="/posts/">
+        查看全部文章
+        <span aria-hidden="true">↗</span>
+      </a>
+    </div>
+
+    {marqueeTags.length > 0 && (
+      <div class="post-showcase-marquee" aria-label="文章标签">
+        <div class="post-showcase-marquee-track">
+          {marqueeTags.map((tag) => (
+            <a href={`/tags/${tag.slug}/`}>
+              <span aria-hidden="true">◆</span>
+              {tag.name}
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+  </footer>
+</section>

@@ -1,21 +1,22 @@
 ﻿---
 import { getCollection } from 'astro:content';
-import FeaturedPosts from '../components/FeaturedPosts.astro';
 import Hero from '../components/Hero.astro';
 import PostList from '../components/PostList.astro';
+import PostShowcase from '../components/PostShowcase.astro';
 import TrendingPreview from '../components/TrendingPreview.astro';
 import { siteConfig } from '../data/site';
-import { getFeaturedPosts, getPublishedPosts } from '../lib/blog';
+import { getAllTags, getPublishedPosts } from '../lib/blog';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
 const allPosts = getPublishedPosts(await getCollection('blog'));
-const featuredPosts = getFeaturedPosts(allPosts).slice(0, 2);
-const latestPosts = allPosts.slice(0, 5);
+const allTags = getAllTags(allPosts);
+const showcasePosts = allPosts.slice(0, 4);
+const morePosts = allPosts.slice(4, 9);
 ---
 
 <BaseLayout title={siteConfig.title} description={siteConfig.description}>
   <Hero />
   <TrendingPreview />
-  <FeaturedPosts posts={featuredPosts} />
-  <PostList title="最新文章" posts={latestPosts} />
+  <PostShowcase posts={showcasePosts} tags={allTags} />
+  <PostList title="继续阅读" posts={morePosts} />
 </BaseLayout>

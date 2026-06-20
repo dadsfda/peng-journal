@@ -188,38 +188,35 @@ describe('post table of contents component', () => {
 describe('home page', () => {
   test('构建产物中包含首页真实内容、标签输出与分区数据差异', () => {
     const html = readFileSync(getBuildFilePath('index.html'), 'utf-8');
-    const featuredSection = html.match(/<section class="featured-posts">([\s\S]*?)<\/section>/)?.[1] ?? '';
-    const latestSection = html.match(/<section class="post-list-section">([\s\S]*?)<\/section>/)?.[1] ?? '';
+    const showcaseSection = html.match(/<section class="post-showcase"[\s\S]*?<\/section>/)?.[0] ?? '';
+    const continueSection = html.match(/<section class="post-list-section">([\s\S]*?)<\/section>/)?.[1] ?? '';
 
     expect(html).toContain(siteConfig.title);
     expect(html).toContain('GitHub Trending');
     expect(html).toContain('/trending/');
     expect(html).toContain('精选文章');
-    expect(html).toContain('最新文章');
+    expect(html).toContain('继续阅读');
 
-    expect(featuredSection).toContain('/posts/how-i-structure-writing/');
-    expect(featuredSection).toContain('/posts/ai-agent-building-summary/');
-    expect(featuredSection).not.toContain('/posts/harness-engineering-for-ai-agents/');
+    expect(showcaseSection).toContain('/posts/harness-practice-automated-knowledge-video/');
+    expect(showcaseSection).toContain('/posts/agent-skills-knowledge-retrieval/');
+    expect(showcaseSection).toContain('/posts/harness-engineering-for-ai-agents/');
+    expect(showcaseSection).toContain('/posts/how-i-structure-writing/');
+    expect(showcaseSection).toContain('/images/post-covers/harness-video.png');
+    expect(showcaseSection).toContain('/images/post-covers/agent-skills-retrieval.png');
+    expect(showcaseSection).toContain('/images/post-covers/harness-engineering.png');
+    expect(showcaseSection).toContain('/images/post-covers/claude-code-guidelines.png');
+    expect(showcaseSection).not.toContain('HeartX');
+    expect(showcaseSection).not.toContain('Swave');
+    expect(showcaseSection.indexOf('/posts/agent-skills-knowledge-retrieval/')).toBeLessThan(
+      showcaseSection.indexOf('/posts/harness-engineering-for-ai-agents/')
+    );
+    expect(showcaseSection.indexOf('/posts/harness-practice-automated-knowledge-video/')).toBeLessThan(
+      showcaseSection.indexOf('/posts/harness-engineering-for-ai-agents/')
+    );
 
-    expect(latestSection).toContain('/posts/harness-practice-automated-knowledge-video/');
-    expect(latestSection).toContain('/posts/agent-skills-knowledge-retrieval/');
-    expect(latestSection).toContain('/posts/harness-engineering-for-ai-agents/');
-    expect(latestSection).toContain('/posts/how-i-structure-writing/');
-    expect(latestSection).toContain('/posts/ai-agent-building-summary/');
-    expect(latestSection).not.toContain('/posts/notes-on-quiet-design/');
-    expect(latestSection).not.toContain('/posts/building-a-readable-blog/');
-    expect(latestSection.indexOf('/posts/agent-skills-knowledge-retrieval/')).toBeLessThan(
-      latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')
-    );
-    expect(latestSection.indexOf('/posts/harness-practice-automated-knowledge-video/')).toBeLessThan(
-      latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')
-    );
-    expect(latestSection.indexOf('/posts/harness-engineering-for-ai-agents/')).toBeLessThan(
-      latestSection.indexOf('/posts/how-i-structure-writing/')
-    );
-    expect(latestSection.indexOf('/posts/how-i-structure-writing/')).toBeLessThan(
-      latestSection.indexOf('/posts/ai-agent-building-summary/')
-    );
+    expect(continueSection).toContain('/posts/ai-agent-building-summary/');
+    expect(continueSection).toContain('/posts/notes-on-quiet-design/');
+    expect(continueSection).toContain('/posts/building-a-readable-blog/');
   });
 
 });

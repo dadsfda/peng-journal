@@ -1,0 +1,31 @@
+---
+import type { BlogCategoryGroup } from '../lib/blog';
+import { getPostPermalink } from '../lib/blog';
+
+interface Props {
+  title: string;
+  groups: BlogCategoryGroup[];
+}
+
+const { title, groups } = Astro.props;
+---
+
+<section class="article-category-nav" data-category-nav>
+  <div class="section-heading">
+    <h2>{title}</h2>
+  </div>
+  <div class="article-category-nav-groups">
+    {groups.map((group) => (
+      <section>
+        <h3>{group.name}</h3>
+        <ol>
+          {group.posts.map((post) => (
+            <li>
+              <a href={getPostPermalink(post)}>{post.data.title}</a>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))}
+  </div>
+</section>
