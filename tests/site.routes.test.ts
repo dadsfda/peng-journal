@@ -197,15 +197,15 @@ describe('home page', () => {
     expect(html).toContain('精选文章');
     expect(html).toContain('继续阅读');
 
-    expect(showcaseSection).toContain('/posts/agent-browser-residual-process-performance-debugging/');
     expect(showcaseSection).toContain('/posts/harness-practice-automated-knowledge-video/');
     expect(showcaseSection).toContain('/posts/agent-skills-knowledge-retrieval/');
     expect(showcaseSection).toContain('/posts/harness-engineering-for-ai-agents/');
+    expect(showcaseSection).toContain('/posts/how-i-structure-writing/');
     expect(showcaseSection).toContain('/images/post-covers/harness-video.png');
     expect(showcaseSection).toContain('/images/post-covers/agent-skills-retrieval.png');
     expect(showcaseSection).toContain('/images/post-covers/harness-engineering.png');
-    expect(showcaseSection).not.toContain('/posts/how-i-structure-writing/');
-    expect(showcaseSection).not.toContain('/images/post-covers/claude-code-guidelines.png');
+    expect(showcaseSection).toContain('/images/post-covers/claude-code-guidelines.png');
+    expect(showcaseSection).not.toContain('/posts/agent-browser-residual-process-performance-debugging/');
     expect(showcaseSection).not.toContain('HeartX');
     expect(showcaseSection).not.toContain('Swave');
     expect(showcaseSection.indexOf('/posts/agent-skills-knowledge-retrieval/')).toBeLessThan(
@@ -215,6 +215,7 @@ describe('home page', () => {
       showcaseSection.indexOf('/posts/harness-engineering-for-ai-agents/')
     );
 
+    expect(continueSection).toContain('/posts/agent-browser-residual-process-performance-debugging/');
     expect(continueSection).toContain('/posts/ai-agent-building-summary/');
     expect(continueSection).toContain('/posts/notes-on-quiet-design/');
     expect(continueSection).toContain('/posts/building-a-readable-blog/');
