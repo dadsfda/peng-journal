@@ -12,6 +12,8 @@ interface Props {
   ogDescription?: string;
   ogType?: 'website' | 'article';
   ogImage?: string;
+  bodyClass?: string;
+  showFooter?: boolean;
 }
 
 const {
@@ -21,7 +23,9 @@ const {
   ogTitle = title,
   ogDescription = description,
   ogType = 'website',
-  ogImage = siteConfig.defaultOgImage
+  ogImage = siteConfig.defaultOgImage,
+  bodyClass,
+  showFooter = true
 } = Astro.props;
 
 const siteOrigin = Astro.site?.toString() ?? siteConfig.siteUrl;
@@ -50,11 +54,11 @@ const ogImageUrl = new URL(ogImage, siteOrigin).toString();
     <meta name="twitter:description" content={ogDescription} />
     <meta name="twitter:image" content={ogImageUrl} />
   </head>
-  <body>
+  <body class={bodyClass}>
     <Header />
     <main class="page-shell">
       <slot />
     </main>
-    <Footer />
+    {showFooter && <Footer />}
   </body>
 </html>

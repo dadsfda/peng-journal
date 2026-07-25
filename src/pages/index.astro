@@ -1,25 +1,19 @@
 ﻿---
 import { getCollection } from 'astro:content';
 import Hero from '../components/Hero.astro';
-import PostList from '../components/PostList.astro';
-import PostShowcase from '../components/PostShowcase.astro';
-import TrendingPreview from '../components/TrendingPreview.astro';
 import { siteConfig } from '../data/site';
-import { getAllTags, getPostSlug, getPublishedPosts } from '../lib/blog';
+import { getPostPermalink, getPublishedPosts } from '../lib/blog';
 import BaseLayout from '../layouts/BaseLayout.astro';
 
-const allPosts = getPublishedPosts(await getCollection('blog'));
-const allTags = getAllTags(allPosts);
-const showcasePosts = allPosts
-  .filter((post) => getPostSlug(post) !== 'agent-browser-residual-process-performance-debugging')
-  .slice(0, 4);
-const showcaseSlugs = new Set(showcasePosts.map((post) => getPostSlug(post)));
-const morePosts = allPosts.filter((post) => !showcaseSlugs.has(getPostSlug(post))).slice(0, 5);
+const featuredPosts = getPublishedPosts(await getCollection('blog'))
+  .filter((post) => post.data.featured)
+  .map((post) => ({
+    title: post.data.title,
+    description: post.data.description,
+    permalink: getPostPermalink(post)
+  }));
 ---
 
-<BaseLayout title={siteConfig.title} description={siteConfig.description}>
-  <Hero />
-  <TrendingPreview />
-  <PostShowcase posts={showcasePosts} tags={allTags} />
-  <PostList title="继续阅读" posts={morePosts} />
+<BaseLayout title={siteConfig.title} description={siteConfig.description} bodyClass="home-page" showFooter={false}>
+  <Hero featuredPosts={featuredPosts} />
 </BaseLayout>

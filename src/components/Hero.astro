@@ -1,9 +1,173 @@
 ---
 import { siteConfig } from '../data/site';
+
+type FeaturedPost = {
+  title: string;
+  description: string;
+  permalink: string;
+};
+
+interface Props {
+  featuredPosts?: FeaturedPost[];
+}
+
+const { featuredPosts = [] } = Astro.props;
 ---
 
-<section class="hero">
-  <p class="eyebrow">AI 与编程博客</p>
-  <h1>{siteConfig.title}</h1>
-  <p class="hero-copy">{siteConfig.intro}</p>
+<section class="home-hero" aria-labelledby="home-hero-title" data-home-hero>
+  <img class="home-hero-image" src="/images/home-hero.png" alt="夕阳下的 AI 编程工作台" />
+  <div class="home-hero-shade" aria-hidden="true"></div>
+  <canvas class="home-ink-canvas" data-ink-canvas aria-hidden="true"></canvas>
+  <div class="home-hero-content">
+    <p class="home-hero-eyebrow">AI · CODE · NOTES</p>
+    <h1 id="home-hero-title">{siteConfig.title}</h1>
+    <p class="home-hero-copy">{siteConfig.intro}</p>
+    {featuredPosts.length > 0 && (
+      <div class="home-featured" aria-live="polite">
+        {featuredPosts.map((post, index) => (
+          <a href={post.permalink} data-featured-item hidden={index > 0}>
+            <span class="home-featured-label">本次精选</span>
+            <strong>{post.title}</strong>
+            <span class="home-featured-arrow" aria-hidden="true">↗</span>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+  <p class="home-hero-index" aria-hidden="true">PENG / JOURNAL / 2026</p>
+
+  <script>
+    // @ts-nocheck
+    import { initFluidInk } from '../scripts/fluidInk.js';
+
+    (() => {
+      const items = Array.from(document.querySelectorAll('[data-featured-item]'));
+      if (items.length > 1) {
+        const selectedIndex = Math.floor(Math.random() * items.length);
+        items.forEach((item, index) => {
+          item.hidden = index !== selectedIndex;
+        });
+      }
+
+      const initInkFallback = (hero, canvas, context) => {
+        const precisePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const particles = [];
+        let width = 0;
+        let height = 0;
+        let animationFrame = 0;
+        let lastPoint = null;
+
+        const fillMask = () => {
+          context.globalCompositeOperation = 'source-over';
+          context.fillStyle = '#f5f5f2';
+          context.fillRect(0, 0, width, height);
+        };
+
+        const resizeCanvas = () => {
+          const bounds = hero.getBoundingClientRect();
+          const ratio = Math.min(window.devicePixelRatio || 1, 2);
+          width = bounds.width;
+          height = bounds.height;
+          canvas.width = Math.round(width * ratio);
+          canvas.height = Math.round(height * ratio);
+          context.setTransform(ratio, 0, 0, ratio, 0, 0);
+          fillMask();
+        };
+
+        const createInk = (x, y) => {
+          const now = performance.now();
+          const amount = 4 + Math.floor(Math.random() * 4);
+          for (let index = 0; index < amount; index += 1) {
+            const angle = Math.random() * Math.PI * 2;
+            const distance = Math.random() * 26;
+            particles.push({
+              x: x + Math.cos(angle) * distance,
+              y: y + Math.sin(angle) * distance,
+              radius: 34 + Math.random() * 64,
+              rotation: Math.random() * Math.PI,
+              stretch: 0.65 + Math.random() * 0.8,
+              born: now,
+              life: 1500 + Math.random() * 1000
+            });
+          }
+          if (particles.length > 180) particles.splice(0, particles.length - 180);
+        };
+
+        const renderInk = (now) => {
+          fillMask();
+          context.globalCompositeOperation = 'destination-out';
+          for (let index = particles.length - 1; index >= 0; index -= 1) {
+            const particle = particles[index];
+            const progress = (now - particle.born) / particle.life;
+            if (progress >= 1) {
+              particles.splice(index, 1);
+              continue;
+            }
+            const strength = Math.sin(Math.PI * progress);
+            const radius = particle.radius * (0.45 + progress * 0.85);
+            const gradient = context.createRadialGradient(0, 0, radius * 0.12, 0, 0, radius);
+            gradient.addColorStop(0, 'rgba(0, 0, 0, ' + strength + ')');
+            gradient.addColorStop(0.58, 'rgba(0, 0, 0, ' + strength * 0.78 + ')');
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            context.save();
+            context.translate(particle.x, particle.y);
+            context.rotate(particle.rotation);
+            context.scale(particle.stretch, 1 / particle.stretch);
+            context.fillStyle = gradient;
+            context.beginPath();
+            context.arc(0, 0, radius, 0, Math.PI * 2);
+            context.fill();
+            context.restore();
+          }
+          if (particles.length > 0) animationFrame = requestAnimationFrame(renderInk);
+          else {
+            animationFrame = 0;
+            fillMask();
+          }
+        };
+
+        resizeCanvas();
+        if (!precisePointer || reducedMotion) {
+          canvas.classList.add('is-static');
+          return;
+        }
+        hero.addEventListener('pointermove', (event) => {
+          const bounds = hero.getBoundingClientRect();
+          const point = { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
+          if (lastPoint && Math.hypot(point.x - lastPoint.x, point.y - lastPoint.y) < 10) return;
+          lastPoint = point;
+          createInk(point.x, point.y);
+          if (!animationFrame) animationFrame = requestAnimationFrame(renderInk);
+        });
+        hero.addEventListener('pointerleave', () => { lastPoint = null; });
+        window.addEventListener('resize', resizeCanvas);
+      };
+
+      const hero = document.querySelector('[data-home-hero]');
+      let canvas = hero?.querySelector('[data-ink-canvas]');
+      if (!hero || !canvas) return;
+
+      const precisePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (precisePointer && !reducedMotion) {
+        try {
+          const cleanup = initFluidInk(canvas);
+          if (typeof cleanup !== 'function') throw new Error('WebGL fluid initialization failed');
+          canvas.dataset.inkEngine = 'webgl';
+          return;
+        } catch (error) {
+          console.warn('Falling back to 2D ink reveal.', error);
+          const replacement = canvas.cloneNode();
+          canvas.replaceWith(replacement);
+          canvas = replacement;
+        }
+      }
+
+      const context = canvas.getContext('2d');
+      if (!context) return;
+      canvas.dataset.inkEngine = '2d';
+      initInkFallback(hero, canvas, context);
+    })();
+  </script>
 </section>

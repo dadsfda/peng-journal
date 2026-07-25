@@ -38,6 +38,7 @@ describe('base layout', () => {
     expect(html).toContain('href="/search"');
     expect(html).toContain('href="/about"');
     expect(html).toContain('<section>content</section>');
+    expect(html).toContain('class="site-footer"');
     expect(html).toMatch(/<main class="page-shell"[^>]*>[\s\S]*<section>content<\/section>[\s\S]*<\/main>/);
     expect(html).toContain('<title>首页</title>');
     expect(html).toContain('<meta name="description" content="desc">');
@@ -48,12 +49,27 @@ describe('base layout', () => {
 });
 
 describe('hero component', () => {
-  test('输出站点标题与介绍文案', async () => {
+  test('输出站点标题、介绍文案与精选文章候选项', async () => {
     const container = await AstroContainer.create();
-    const html = await container.renderToString(Hero, { partial: false });
+    const html = await container.renderToString(Hero, {
+      props: {
+        featuredPosts: [
+          { title: '精选文章 A', description: 'A desc', permalink: '/posts/a/' },
+          { title: '精选文章 B', description: 'B desc', permalink: '/posts/b/' }
+        ]
+      },
+      partial: false
+    });
 
     expect(html).toContain(siteConfig.title);
     expect(html).toContain(siteConfig.intro);
+    expect(html).toContain('data-featured-item');
+    expect(html).toContain('精选文章 A');
+    expect(html).toContain('精选文章 B');
+    expect(html).toContain('href="/posts/a/"');
+    expect(html).toContain('href="/posts/b/"');
+    expect(html).toContain('data-ink-canvas');
+    expect(html).toContain('<canvas');
   });
 });
 
@@ -186,39 +202,87 @@ describe('post table of contents component', () => {
 });
 
 describe('home page', () => {
-  test('构建产物中包含首页真实内容、标签输出与分区数据差异', () => {
+  test('首页仅展示带导航入口的沉浸式 Hero', () => {
     const html = readFileSync(getBuildFilePath('index.html'), 'utf-8');
-    const showcaseSection = html.match(/<section class="post-showcase"[\s\S]*?<\/section>/)?.[0] ?? '';
-    const continueSection = html.match(/<section class="post-list-section">([\s\S]*?)<\/section>/)?.[1] ?? '';
 
     expect(html).toContain(siteConfig.title);
-    expect(html).toContain('GitHub Trending');
-    expect(html).toContain('/trending/');
-    expect(html).toContain('精选文章');
-    expect(html).toContain('继续阅读');
+    expect(html).toContain('class="home-hero"');
+    expect(html).toContain('/images/home-hero.png');
+    expect(html).toContain('href="/posts"');
+    expect(html).toContain('href="/about"');
+    expect(html).not.toContain('GitHub Trending');
+    expect(html).not.toContain('精选文章');
+    expect(html).not.toContain('继续阅读');
+    expect(html).not.toContain('class="site-footer"');
+    expect(existsSync(resolve(process.cwd(), 'public/images/home-hero.png'))).toBe(true);
+  });
 
-    expect(showcaseSection).toContain('/posts/harness-practice-automated-knowledge-video/');
-    expect(showcaseSection).toContain('/posts/agent-skills-knowledge-retrieval/');
-    expect(showcaseSection).toContain('/posts/harness-engineering-for-ai-agents/');
-    expect(showcaseSection).toContain('/posts/how-i-structure-writing/');
-    expect(showcaseSection).toContain('/images/post-covers/harness-video.png');
-    expect(showcaseSection).toContain('/images/post-covers/agent-skills-retrieval.png');
-    expect(showcaseSection).toContain('/images/post-covers/harness-engineering.png');
-    expect(showcaseSection).toContain('/images/post-covers/claude-code-guidelines.png');
-    expect(showcaseSection).not.toContain('/posts/agent-browser-residual-process-performance-debugging/');
-    expect(showcaseSection).not.toContain('HeartX');
-    expect(showcaseSection).not.toContain('Swave');
-    expect(showcaseSection.indexOf('/posts/agent-skills-knowledge-retrieval/')).toBeLessThan(
-      showcaseSection.indexOf('/posts/harness-engineering-for-ai-agents/')
-    );
-    expect(showcaseSection.indexOf('/posts/harness-practice-automated-knowledge-video/')).toBeLessThan(
-      showcaseSection.indexOf('/posts/harness-engineering-for-ai-agents/')
-    );
+  test('首页样式限制为单屏并提供背景遮罩与移动端布局', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
 
-    expect(continueSection).toContain('/posts/agent-browser-residual-process-performance-debugging/');
-    expect(continueSection).toContain('/posts/ai-agent-building-summary/');
-    expect(continueSection).toContain('/posts/notes-on-quiet-design/');
-    expect(continueSection).toContain('/posts/building-a-readable-blog/');
+    expect(css).toMatch(/\.home-page\s*\{[^}]*height:\s*100dvh[^}]*overflow:\s*hidden/);
+    expect(css).toContain('.home-page .page-shell');
+    expect(css).toContain('.home-hero-image');
+    expect(css).toContain('.home-hero-shade');
+    expect(css).toMatch(/\.home-hero-shade\s*\{[^}]*linear-gradient/);
+    expect(css).toContain('.home-featured');
+  });
+
+  test('首页每次加载会随机显示一篇精选文章', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/Hero.astro'), 'utf-8');
+
+    expect(source).toContain('Math.random()');
+    expect(source).toContain("querySelectorAll('[data-featured-item]')");
+    expect(source).toContain('item.hidden = index !== selectedIndex');
+  });
+
+  test('首页 Canvas 使用可恢复的水墨粒子擦除遮罩', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/components/Hero.astro'), 'utf-8');
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
+
+    expect(source).toContain("globalCompositeOperation = 'destination-out'");
+    expect(source).toContain('requestAnimationFrame');
+    expect(source).toContain("addEventListener('pointermove'");
+    expect(source).toContain('window.devicePixelRatio');
+    expect(source).toContain('(hover: hover) and (pointer: fine)');
+    expect(source).toContain('(prefers-reduced-motion: reduce)');
+    expect(source).toContain('life: 1500 + Math.random() * 1000');
+    expect(css).toContain('.home-ink-canvas');
+    expect(css).toContain('pointer-events: none');
+    expect(css).toContain('.home-ink-canvas.is-static');
+  });
+
+  test('WebGL 水墨模块包含完整流体模拟管线与参考参数', () => {
+    const modulePath = resolve(process.cwd(), 'src/scripts/fluidInk.js');
+
+    expect(existsSync(modulePath)).toBe(true);
+    if (!existsSync(modulePath)) return;
+
+    const source = readFileSync(modulePath, 'utf-8');
+    expect(source).toContain('export function initFluidInk');
+    expect(source).toContain('function getWebGLContext');
+    expect(source).toContain('createDoubleFBO');
+    expect(source).toContain('advectionShader');
+    expect(source).toContain('vorticityShader');
+    expect(source).toContain('pressureShader');
+    expect(source).toContain('SPLAT_RADIUS = 0.24');
+    expect(source).toContain('SPLAT_FORCE = 6000');
+    expect(source).toContain('(prefers-reduced-motion: reduce)');
+  });
+
+  test('Hero 优先使用透明流体遮罩并在 WebGL 失败时回退', () => {
+    const heroSource = readFileSync(resolve(process.cwd(), 'src/components/Hero.astro'), 'utf-8');
+    const fluidSource = readFileSync(resolve(process.cwd(), 'src/scripts/fluidInk.js'), 'utf-8');
+
+    expect(heroSource).toContain("import { initFluidInk } from '../scripts/fluidInk.js'");
+    expect(heroSource).toContain('const initInkFallback');
+    expect(heroSource).toContain('initFluidInk(canvas)');
+    expect(heroSource).toContain('initInkFallback(hero, canvas, context)');
+    expect(fluidSource).toContain('float maskAlpha = 1.0 - clamp(a * 40.0, 0.0, 1.0)');
+    expect(fluidSource).toContain('gl_FragColor = vec4(vec3(0.9608) * maskAlpha, maskAlpha)');
+    expect(readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8')).toContain(
+      '.home-featured [data-featured-item][hidden]'
+    );
   });
 
 });
@@ -269,6 +333,26 @@ describe('post table of contents', () => {
 
     expect(css).toContain('max-height: calc(100vh - 136px);');
     expect(css).toContain('overflow-y: auto;');
+  });
+
+  test('目录根据阅读位置高亮并自动保持当前项可见', () => {
+    const source = readFileSync(resolve(process.cwd(), 'src/pages/posts/[slug].astro'), 'utf-8');
+
+    expect(source).not.toMatch(/<script is:inline>\s*\{`/);
+    expect(source).toContain('requestAnimationFrame');
+    expect(source).toContain('getBoundingClientRect().top');
+    expect(source).toContain("addEventListener('scroll'");
+    expect(source).toContain('scrollIntoView');
+    expect(source).toContain("behavior: 'smooth'");
+    expect(source).toContain("block: 'nearest'");
+  });
+
+  test('目录当前项具备指示线且二三级标题层级明显', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/styles/global.css'), 'utf-8');
+
+    expect(css).toMatch(/\.post-toc a\.is-active[\s\S]*?border-left-color:\s*var\(--text\)/);
+    expect(css).toMatch(/\.post-toc-list li\.depth-3\s*\{[^}]*padding-left:\s*1\.25rem/);
+    expect(css).toMatch(/\.post-toc-list li\.depth-3\s*\{[^}]*font-size:\s*0\.92rem/);
   });
 });
 

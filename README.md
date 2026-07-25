@@ -1,4 +1,4 @@
-﻿# Peng Journal
+# Peng Journal
 
 Peng Journal 是一个以 AI、技术和长期写作为主题的个人博客。
 

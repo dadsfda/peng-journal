@@ -70,18 +70,23 @@ const seriesPosts = post.data.series ? getSeriesPosts(allPosts, post.data.series
   </div>
 
   <script is:inline>
-    {`
-      (() => {
+    (() => {
         const root = document.querySelector('[data-toc-script]');
         if (!root) return;
 
+        const toc = root.querySelector('[data-toc]');
         const links = Array.from(root.querySelectorAll('[data-toc-link]'));
         const headings = Array.from(root.querySelectorAll('[data-post-content] h2, [data-post-content] h3'));
-        if (!links.length || !headings.length) return;
+        if (!toc || !links.length || !headings.length) return;
 
         const linkMap = new Map(links.map((link) => [link.getAttribute('data-toc-link'), link]));
+        let activeSlug = '';
+        let ticking = false;
 
         const setActive = (slug) => {
+          if (slug === activeSlug) return;
+          activeSlug = slug;
+
           links.forEach((link) => {
             const isActive = link.getAttribute('data-toc-link') === slug;
             link.classList.toggle('is-active', isActive);
@@ -91,29 +96,41 @@ const seriesPosts = post.data.series ? getSeriesPosts(allPosts, post.data.series
               link.removeAttribute('aria-current');
             }
           });
+
+          const activeLink = linkMap.get(slug);
+          if (activeLink) {
+            const tocRect = toc.getBoundingClientRect();
+            const linkRect = activeLink.getBoundingClientRect();
+            if (linkRect.top < tocRect.top || linkRect.bottom > tocRect.bottom) {
+              activeLink.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+          }
         };
 
-        const observer = new IntersectionObserver(
-          (entries) => {
-            const visibleEntries = entries
-              .filter((entry) => entry.isIntersecting)
-              .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const updateActive = () => {
+          const readingLine = 120;
+          let currentHeading = headings[0];
 
-            const activeHeading = visibleEntries[0]?.target ?? headings[0];
-            const activeSlug = activeHeading?.id;
-            if (activeSlug && linkMap.has(activeSlug)) {
-              setActive(activeSlug);
-            }
-          },
-          {
-            rootMargin: '-20% 0px -60% 0px',
-            threshold: [0, 1]
+          for (const heading of headings) {
+            if (heading.getBoundingClientRect().top > readingLine) break;
+            currentHeading = heading;
           }
-        );
 
-        headings.forEach((heading) => observer.observe(heading));
-        setActive(headings[0]?.id ?? '');
-      })();
-    `}
+          if (currentHeading?.id && linkMap.has(currentHeading.id)) {
+            setActive(currentHeading.id);
+          }
+          ticking = false;
+        };
+
+        const scheduleUpdate = () => {
+          if (ticking) return;
+          ticking = true;
+          requestAnimationFrame(updateActive);
+        };
+
+        window.addEventListener('scroll', scheduleUpdate, { passive: true });
+        window.addEventListener('resize', scheduleUpdate);
+        scheduleUpdate();
+    })();
   </script>
 </BaseLayout>
